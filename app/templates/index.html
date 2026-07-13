@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">SSR App Skeleton</p>
+  <h1>{{ project_name }}</h1>
+  <p class="lead">{{ subtitle }}</p>
+
+  <div class="card-grid">
+    <article class="card">
+      <h2>Frontend</h2>
+      <p>Template SSR, layout, static assets, dashboard pages.</p>
+    </article>
+    <article class="card">
+      <h2>Backend</h2>
+      <p>Routes, API, health check, business logic, later MQTT / DB.</p>
+    </article>
+    <article class="card">
+      <h2>Next step</h2>
+      <p>Nối database, auth, realtime data, and device control flow.</p>
+    </article>
+  </div>
+</section>
+{% endblock %}

@@ -1,1 +1,0 @@
-"""College IoT app package."""

@@ -1,1 +1,0 @@
-"""Core helpers for the College IoT app."""

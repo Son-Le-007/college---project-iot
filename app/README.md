@@ -18,11 +18,17 @@ Cấu trúc khung:
 
 Luồng hiện tại chỉ là skeleton, chưa gắn database hay MQTT.
 
+Cài uv: `pip install uv`
+
+Add dependencies: `uv add <package_name>`
+
 Chạy app:
-- cài dependencies: `pip install -e .`
-- chạy server: `uvicorn app.main:app --reload`
-- hoặc chạy trực tiếp: `python app/main.py`
+- cài venv: `uv venv`
+- cài dependencies: `uv sync`
+- chạy server (uv tự kích hoạt venv): `uv run uvicorn app.main:app --reload`
+- hoặc chạy trực tiếp: `uv run app/main.py`
 
 Ghi chú:
 - chạy lệnh trong thư mục `app/`
 - nếu muốn tách tiếp tầng dữ liệu, thêm database và MQTT vào `app/services/`
+

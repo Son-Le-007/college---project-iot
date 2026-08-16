@@ -5,6 +5,7 @@
 static DHT dht(DHTPIN, DHTTYPE);
 
 void initSensor() {
+  pinMode(SOLI_MOISTURE_PIN, INPUT);
   dht.begin();
 }
 
@@ -20,4 +21,10 @@ DHTData readDHTData() {
     dhtData.isValid = true;
   }
   return dhtData;
+}
+
+float readSoilMoisturePercent() {
+  float soil_moisture_raw_data = analogRead(SOLI_MOISTURE_PIN);
+  float soil_moisture_percent = map(soil_moisture_raw_data, 0, 1024, 0, 100); 
+  return soil_moisture_percent;
 }

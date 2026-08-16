@@ -27,24 +27,43 @@
     <p>Nhiệt độ: <span id ="temperature-text">--</span>°C</p>
   </div>
 
+  <div class="card">
+    <p>Độ ẩm đất: <span id ="soil-moisture-text">--</span>%</p>
+  </div>
+
   <script>
-    async function updateDHT11(params) {
+    async function updateDHT11() {
       try {
-        const respond =  await fetch('api/dht11');
+        const respond =  await fetch('/api/dht11');
         const result = await respond.json(); // Extracts { status: "success", data: { temperature, humidity } }
 
         if (result.status == "success") {
-          document.getElementById("humidity-text").innerText = result.data.temperature
-          document.getElementById("temperature-text").innerText = result.data.humidity
+          document.getElementById("humidity-text").innerText = result.data.humidity ?? "--";
+          document.getElementById("temperature-text").innerText = result.data.temperature ?? "--";
         }
       } catch(error) {
         console.error("Failed to fetch DHT11 data:", error);
       }
     }
 
+    async function updateSoilMoisture() {
+      try {
+        const respond = await fetch('/api/moisture');
+        const result = await respond.json();
+
+        if (result.status == "success") {
+          document.getElementById("soil-moisture-text").innerText = result.data.soil_moisture ?? "--";
+        }
+      } catch(error) {
+        console.error("Failed to fetch soil moisture data", error);
+      }
+    }
+
     // Fetch immediately on load, then poll every 2 seconds
     updateDHT11();
+    updateSoilMoisture();
     setInterval(updateDHT11, 2000);
+    setInterval(updateSoilMoisture, 2000);
   </script>
 
 </section>

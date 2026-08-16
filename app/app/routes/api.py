@@ -14,3 +14,10 @@ async def getDHT11_telemetry():
         "status" : "success",
         "data": cache.get_cache_dht11_data()
     }
+    
+@router.get("/moisture")
+async def getSoilMoisture():
+    return {
+        "status" : "successs",
+        "data" : cache.get_cache_soil_moisture()
+    }

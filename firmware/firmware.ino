@@ -74,6 +74,7 @@ void loop()
     
     DHTData dhtData = readDHTData();
     float ambient_light = analogRead(LDRPIN);
+    float soilMoisturePercent = readSoilMoisturePercent();
 
     if (!dhtData.isValid)
     {
@@ -81,10 +82,11 @@ void loop()
         delay(2000);
         return;
     }
-    Serial.println(dhtData.temperature);
+
     String payload = "{";
     payload += "\"temperature\":" + String(dhtData.temperature, 1) + ",";
     payload += "\"humidity\":" + String(dhtData.humidity, 1) + ",";
+    payload += "\"soil_moisture\":" + String(soilMoisturePercent, 1) +",";
     payload += "\"ambient_light\":" + String(ambient_light, 1);
     payload += "}";
 

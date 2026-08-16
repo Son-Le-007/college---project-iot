@@ -9,5 +9,6 @@ struct DHTData{
 
 void initSensor();
 DHTData readDHTData();
+float readSoilMoisturePercent();
 
 #endif

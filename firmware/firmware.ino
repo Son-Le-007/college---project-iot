@@ -2,18 +2,14 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <PubSubClient.h>
-#include <DHT.h>
 #include "secrets.h"
+#include "config.h"
+#include "sensor_manager.h"
 
-// Pin Configurations
-#define DHTPIN 10
-#define DHTTYPE DHT22
 #define LDRPIN 1
 
-DHT dht(DHTPIN, DHTTYPE);
-
-const char *ssid = "Wokwi-GUEST";
-const char *pass = "";
+const char *ssid = WIFI_SSID;
+const char *pass = WIFI_PASSWORD;
 
 const char *mqtt_topic = "sensors";
 
@@ -60,10 +56,10 @@ void setup()
 {
     Serial.begin(115200);
 
-    dht.begin();
+    initSensor();
 
     setup_wifi();
-
+    Serial.println(MQTT_HOST);
     client.setServer(MQTT_HOST, MQTT_PORT);
 }
 
@@ -75,21 +71,20 @@ void loop()
     }
 
     client.loop();
-
-    float temperature = dht.readTemperature();
-    float humidity = dht.readHumidity();
+    
+    DHTData dhtData = readDHTData();
     float ambient_light = analogRead(LDRPIN);
 
-    if (isnan(temperature) || isnan(humidity))
+    if (!dhtData.isValid)
     {
         Serial.println("DHT read failed");
         delay(2000);
         return;
     }
-
+    Serial.println(dhtData.temperature);
     String payload = "{";
-    payload += "\"temperature\":" + String(temperature, 1) + ",";
-    payload += "\"humidity\":" + String(humidity, 1) + ",";
+    payload += "\"temperature\":" + String(dhtData.temperature, 1) + ",";
+    payload += "\"humidity\":" + String(dhtData.humidity, 1) + ",";
     payload += "\"ambient_light\":" + String(ambient_light, 1);
     payload += "}";
 

@@ -4,7 +4,7 @@
 <section class="hero">
   <p class="eyebrow">SSR App Skeleton</p>
   <h1>{{ project_name }}</h1>
-  <p class="lead">{{ subtitle }}</p>
+  <p class="lead">{{ subtitle }}</p>  
 
   <div class="card-grid">
     <article class="card">
@@ -20,5 +20,32 @@
       <p>Nối database, auth, realtime data, and device control flow.</p>
     </article>
   </div>
+
+  <div class="card">
+    <h3>Cảm biến DHT11</h3>
+    <p>Độ ẩm không khí: <span id ="humidity-text">--</span>%</p>
+    <p>Nhiệt độ: <span id ="temperature-text">--</span>°C</p>
+  </div>
+
+  <script>
+    async function updateDHT11(params) {
+      try {
+        const respond =  await fetch('api/dht11');
+        const result = await respond.json(); // Extracts { status: "success", data: { temperature, humidity } }
+
+        if (result.status == "success") {
+          document.getElementById("humidity-text").innerText = result.data.temperature
+          document.getElementById("temperature-text").innerText = result.data.humidity
+        }
+      } catch(error) {
+        console.error("Failed to fetch DHT11 data:", error);
+      }
+    }
+
+    // Fetch immediately on load, then poll every 2 seconds
+    updateDHT11();
+    setInterval(updateDHT11, 2000);
+  </script>
+
 </section>
 {% endblock %}

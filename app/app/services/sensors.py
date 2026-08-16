@@ -1,5 +1,6 @@
 import json
 import time
+from .cache import set_sensor_cache
 
 from app.database import (
     insert_telemetry,
@@ -14,14 +15,15 @@ def handle_sensor_telemetry(payload: str):
 
     current_time = time.time()
 
-    if (current_time - last_saved_time) < TELEMETRY_PERSISTENCE_INTERVAL_TIME:
-        return
-
     try:
         data = json.loads(payload)
 
-        insert_telemetry(data)
+        set_sensor_cache(data)
 
+        if (current_time - last_saved_time) < TELEMETRY_PERSISTENCE_INTERVAL_TIME:
+                return
+            
+        insert_telemetry(data)
         last_saved_time = current_time
         print("💾 [Services] Telemetry persistence interval met and saved.")
 

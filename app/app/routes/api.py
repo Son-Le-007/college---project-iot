@@ -12,12 +12,17 @@ async def health() -> dict[str, str]:
 async def getDHT11_telemetry():
     return {
         "status" : "success",
-        "data": cache.get_cache_dht11_data()
+        "data": {
+            "temperature": cache.get_cache_DHT_temperature(),
+            "humidity": cache.get_cache_DHT_humidity()
+        }
     }
     
 @router.get("/moisture")
 async def getSoilMoisture():
     return {
-        "status" : "successs",
-        "data" : cache.get_cache_soil_moisture()
+        "status" : "success",
+        "data" : {
+            "soil_moisture": cache.get_cache_soil_moisture()
+        }
     }

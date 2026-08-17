@@ -23,12 +23,12 @@
 
   <div class="card">
     <h3>Cảm biến DHT11</h3>
-    <p>Độ ẩm không khí: <span id ="humidity-text">--</span>%</p>
-    <p>Nhiệt độ: <span id ="temperature-text">--</span>°C</p>
+    <p>Độ ẩm không khí: <span id="humidity-text">--</span>%</p>
+    <p>Nhiệt độ: <span id="temperature-text">--</span>°C</p>
   </div>
 
   <div class="card">
-    <p>Độ ẩm đất: <span id ="soil-moisture-text">--</span>%</p>
+    <p>Độ ẩm đất: <span id="soil-moisture-text">--</span>%</p>
   </div>
 
   <script>
@@ -37,7 +37,7 @@
         const respond =  await fetch('/api/dht11');
         const result = await respond.json(); // Extracts { status: "success", data: { temperature, humidity } }
 
-        if (result.status == "success") {
+        if (result.status === "success" && result.data) {
           document.getElementById("humidity-text").innerText = result.data.humidity ?? "--";
           document.getElementById("temperature-text").innerText = result.data.temperature ?? "--";
         }
@@ -51,7 +51,7 @@
         const respond = await fetch('/api/moisture');
         const result = await respond.json();
 
-        if (result.status == "success") {
+        if (result.status === "success" && result.data) {
           document.getElementById("soil-moisture-text").innerText = result.data.soil_moisture ?? "--";
         }
       } catch(error) {
@@ -59,11 +59,13 @@
       }
     }
 
+    async function updateDashBoard() {
+      await Promise.all([updateDHT11()], updateSoilMoisture());
+    }
+
     // Fetch immediately on load, then poll every 2 seconds
-    updateDHT11();
-    updateSoilMoisture();
-    setInterval(updateDHT11, 2000);
-    setInterval(updateSoilMoisture, 2000);
+    updateDashBoard();
+    setInterval(updateDashBoard, 3000);
   </script>
 
 </section>

@@ -23,8 +23,15 @@ DHTData readDHTData() {
   return dhtData;
 }
 
+const int WET_SOIL_RAW = 1100;  // Represents 100% moisture
+const int DRY_SOIL_RAW = 3200;  // Represents 0% moisture
+
 float readSoilMoisturePercent() {
+  // The higher moisture, the samller the DIEN TRO value (Analog value)
   float soil_moisture_raw_data = analogRead(SOLI_MOISTURE_PIN);
-  float soil_moisture_percent = map(soil_moisture_raw_data, 0, 1024, 0, 100); 
-  return soil_moisture_percent;
+  float soil_moisture_percent = map(soil_moisture_raw_data, DRY_SOIL_RAW, WET_SOIL_RAW, 0, 100); 
+  Serial.print("Raw data: ");
+  // Serial.println(soil_moisture_raw_data);
+  // Serial.println(soil_moisture_percent);
+  return (float)constrain(soil_moisture_percent, 0, 100);
 }

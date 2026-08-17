@@ -19,7 +19,13 @@ def get_sensor_cache() -> dict:
 
 def get_cache_dht11_data() -> dict:
     dht_keys = ("temperature", "humidity")
-    return {key: _in_memory_cache.get(key, 0.0) for key in dht_keys}
+    return {_in_memory_cache.get(key, 0.0) for key in dht_keys}
 
-def get_cache_soil_moisture() -> dict:
-    return  {"soil_moisture": _in_memory_cache.get("soil_moisture", 0.0)}
+def get_cache_DHT_temperature() -> float:
+    return _in_memory_cache.get("temperature", 0.0)
+
+def get_cache_DHT_humidity() -> float:
+    return _in_memory_cache.get("humidity", 0.0)
+
+def get_cache_soil_moisture() -> float:
+    return _in_memory_cache.get("soil_moisture", 0.0)

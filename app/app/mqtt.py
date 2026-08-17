@@ -51,3 +51,20 @@ def start_mqtt():
         mqtt_client.loop_start()
     except Exception as e:
         print(f"❌ [MQTT] Initialization error: {str(e)}")
+        
+def send_mqtt_threhold(val: float) -> bool:
+    THREHOLD_TOPIC = "threhold/set"
+    payload = str(val)
+    try:
+        msg_info = mqtt_client.publish(THREHOLD_TOPIC, payload, qos=1)
+        msg_info.wait_for_publish(timeout=2.0)
+        
+        if msg_info.is_published():
+            print(f"[MQTT] Successfully published threhold {val}% to {THREHOLD_TOPIC}")
+            return True
+        else:
+            print(f"[MQTT] Timed out waitting to publish to {THREHOLD_TOPIC}")
+            return False
+    except Exception as e:
+        print(f"[MQTT] Failed to publish threhold: {str(e)}")
+        return False

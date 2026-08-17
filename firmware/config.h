@@ -6,6 +6,7 @@
 // ---------------------------- Pin Configurations ---------------------------- 
 #define DHTPIN 21
 #define SOLI_MOISTURE_PIN 35
+#define RELAY_PIN 34 // PUMP
 
 
 #define DHTTYPE DHT11

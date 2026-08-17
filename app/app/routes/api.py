@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from ..services import cache
+from ..mqtt import send_mqtt_threhold
 
 router = APIRouter()
 
@@ -26,3 +27,15 @@ async def getSoilMoisture():
             "soil_moisture": cache.get_cache_soil_moisture()
         }
     }
+    
+@router.post("/threhold/save")
+def setThreHold(data: dict):
+    if "threshold" not in data:
+        return {"status": "error", "message": "missing 'threshold' key"}
+    try:
+        threhold_val = float(data.get("threshold", 0))
+    except:
+        return {"status": "error", "message": "Invalid threshold number"}
+    
+    send_mqtt_threhold(threhold_val)
+    return {"status" : "success"}

@@ -31,6 +31,15 @@
     <p>Độ ẩm đất: <span id="soil-moisture-text">--</span>%</p>
   </div>
 
+  <div class="card">
+    <h3>Cài đặt ngưỡng tưới</h3>
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+      <input type="number" id="threshold-input" placeholder="Nhập ngưỡng (0-100)" min="0" max="100" style="padding: 8px; width: 100%;">
+      <button onclick="saveThreshold()" style="padding: 8px 16px; cursor: pointer;">Lưu</button>
+    </div>
+    <p id="threshold-status" style="margin-top: 8px; font-size: 0.9em;"></p>
+  </div>
+
   <script>
     async function updateDHT11() {
       try {
@@ -59,8 +68,48 @@
       }
     }
 
+    async function saveThreshold() {
+      const inputTH = document.getElementById("threshold-input");
+      const statusTH = document.getElementById("threshold-status");
+      const val = parseFloat(inputTH.value)
+
+      if (isNaN(val) || val < 0 || val > 100) {
+        statusTH.style.color = "red";
+        statusTH.innerText = "Vui lòng nhập số từ 0 - 100!";
+        return;
+      }
+
+      statusTH.style.color = "black";
+      statusTH.innerText = "Đang gửi...";
+
+      try{
+        const respond = await fetch("api/threhold/save", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({threshold: val})
+       })
+
+       const result = await respond.json();
+
+       if (result.status == "success") {
+        statusTH.style.color = "green";
+        statusTH.innerText = `Đã lưu ngưỡng ${val}% thành công`;
+        inputTH.value = "";
+       } else {
+        statusTH.style.color = "red";
+        statusTH.innerText = `Lỗi: ${result.message}`;
+       }
+      } catch(error) {
+        console.error("Failed to save threhold: ", error);
+        statusTH.style.color = "red";
+        statusTH.innerText = "Không thể kết nối đến server!";
+       }
+    }
+
     async function updateDashBoard() {
-      await Promise.all([updateDHT11()], updateSoilMoisture());
+      await Promise.all([updateDHT11(), updateSoilMoisture()]);
     }
 
     // Fetch immediately on load, then poll every 2 seconds

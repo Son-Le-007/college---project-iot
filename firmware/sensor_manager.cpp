@@ -35,3 +35,10 @@ float readSoilMoisturePercent() {
   // Serial.println(soil_moisture_percent);
   return (float)constrain(soil_moisture_percent, 0, 100);
 }
+
+
+float readAmbientLightPercent() {
+  int raw_light = analogRead(LDRPIN);
+  float light_percent = map(raw_light, 0, 4095, 0, 100); 
+  return (float)constrain(light_percent, 0, 100);
+}

@@ -38,26 +38,67 @@
     <p>Độ ẩm đất: <span id="soil-moisture-text">--</span></p>
   </div>
 
-  <div class="card-grid" style="margin-top: 20px;">
-    <div class="card" style="text-align: center;">
+  <div class="card">
+    <h3>Predicted Evaporation Speed</h3>
+    <p>Tốc độ bay hơi dự kiến: <span id="evaporation-text" style="font-weight: bold; color: rgb(255, 99, 132);">--</span></p>
+  </div>
+
+  <div class="card-grid" style="margin-top: 20px">
+    <div class="card" style="text-align: center">
       <h3>Gauge Nhiệt độ (Persisted)</h3>
-      <div style="position: relative; height: 160px; width: 100%;">
+      <div style="position: relative; height: 160px; width: 100%">
         <canvas id="temp-gauge-chart"></canvas>
-        <div id="temp-gauge-text" style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 1.25rem; font-weight: bold;">--</div>
+        <div
+          id="temp-gauge-text"
+          style="
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.25rem;
+            font-weight: bold;
+          "
+        >
+          --
+        </div>
       </div>
     </div>
-    <div class="card" style="text-align: center;">
+    <div class="card" style="text-align: center">
       <h3>Gauge Độ ẩm (Persisted)</h3>
-      <div style="position: relative; height: 160px; width: 100%;">
+      <div style="position: relative; height: 160px; width: 100%">
         <canvas id="humidity-gauge-chart"></canvas>
-        <div id="humidity-gauge-text" style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 1.25rem; font-weight: bold;">--</div>
+        <div
+          id="humidity-gauge-text"
+          style="
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.25rem;
+            font-weight: bold;
+          "
+        >
+          --
+        </div>
       </div>
     </div>
-    <div class="card" style="text-align: center;">
+    <div class="card" style="text-align: center">
       <h3>Gauge Ánh sáng (Persisted)</h3>
-      <div style="position: relative; height: 160px; width: 100%;">
+      <div style="position: relative; height: 160px; width: 100%">
         <canvas id="light-gauge-chart"></canvas>
-        <div id="light-gauge-text" style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 1.25rem; font-weight: bold;">--</div>
+        <div
+          id="light-gauge-text"
+          style="
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.25rem;
+            font-weight: bold;
+          "
+        >
+          --
+        </div>
       </div>
     </div>
   </div>
@@ -111,11 +152,13 @@
         type: "doughnut",
         data: {
           labels: [label, "Remaining"],
-          datasets: [{
-            data: [0, maxVal],
-            backgroundColor: [color, "#e0e0e0"],
-            borderWidth: 0
-          }]
+          datasets: [
+            {
+              data: [0, maxVal],
+              backgroundColor: [color, "#e0e0e0"],
+              borderWidth: 0,
+            },
+          ],
         },
         options: {
           responsive: true,
@@ -124,10 +167,10 @@
           rotation: 270,
           plugins: {
             legend: { display: false },
-            tooltip: { enabled: false }
+            tooltip: { enabled: false },
           },
-          cutout: "80%"
-        }
+          cutout: "80%",
+        },
       };
     }
 
@@ -184,21 +227,21 @@
       // Initialize Gauge Charts
       tempGaugeInstance = new Chart(
         document.getElementById("temp-gauge-chart").getContext("2d"),
-        createGaugeConfig("Nhiệt độ", 50, "rgb(255, 99, 132)")
+        createGaugeConfig("Nhiệt độ", 50, "rgb(255, 99, 132)"),
       );
       humidityGaugeInstance = new Chart(
         document.getElementById("humidity-gauge-chart").getContext("2d"),
-        createGaugeConfig("Độ ẩm", 100, "rgb(54, 162, 235)")
+        createGaugeConfig("Độ ẩm", 100, "rgb(54, 162, 235)"),
       );
       lightGaugeInstance = new Chart(
         document.getElementById("light-gauge-chart").getContext("2d"),
-        createGaugeConfig("Ánh sáng", 1024, "rgb(255, 205, 86)")
+        createGaugeConfig("Ánh sáng", 1024, "rgb(255, 205, 86)"),
       );
     }
 
     async function updateGauge(instance, textId, endpoint, maxVal, unit = "") {
       const textEl = document.getElementById(textId);
-      
+
       if (!deviceActive) {
         textEl.innerText = "device inactive";
         if (instance) {
@@ -211,7 +254,7 @@
       try {
         const response = await fetch(endpoint);
         const data = await response.json();
-        
+
         if (data && data.length > 0 && data[0].value !== undefined) {
           const val = data[0].value;
           textEl.innerText = `${val}${unit}`;
@@ -229,9 +272,27 @@
 
     async function updateAllGauges() {
       await Promise.all([
-        updateGauge(tempGaugeInstance, "temp-gauge-text", "/api/metrics/persisted/gauge/temperature", 50, "°C"),
-        updateGauge(humidityGaugeInstance, "humidity-gauge-text", "/api/metrics/persisted/gauge/humidity", 100, "%"),
-        updateGauge(lightGaugeInstance, "light-gauge-text", "/api/metrics/persisted/gauge/ambient_light", 1024, "")
+        updateGauge(
+          tempGaugeInstance,
+          "temp-gauge-text",
+          "/api/metrics/persisted/gauge/temperature",
+          50,
+          "°C",
+        ),
+        updateGauge(
+          humidityGaugeInstance,
+          "humidity-gauge-text",
+          "/api/metrics/persisted/gauge/humidity",
+          100,
+          "%",
+        ),
+        updateGauge(
+          lightGaugeInstance,
+          "light-gauge-text",
+          "/api/metrics/persisted/gauge/ambient_light",
+          1024,
+          "",
+        ),
       ]);
     }
 
@@ -284,30 +345,31 @@
       }
     }
 
-    async function updateDHT11() {
-      try {
-        const respond = await fetch("/api/dht11");
-        const result = await respond.json();
+    // Connect to Backend SSE Stream
+    function initSSE() {
+      const eventSource = new EventSource("/api/stream");
 
-        if (result.status === "success" && result.data) {
-          const isActive = result.data.active;
-          updateStatusUI(isActive);
+      eventSource.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        updateStatusUI(data.active);
 
-          if (isActive) {
-            document.getElementById("humidity-text").innerText =
-              (result.data.humidity ?? "--") + "%";
-            document.getElementById("temperature-text").innerText =
-              (result.data.temperature ?? "--") + "°C";
-          } else {
-            document.getElementById("humidity-text").innerText =
-              "device inactive";
-            document.getElementById("temperature-text").innerText =
-              "device inactive";
-          }
+        if (data.active) {
+          document.getElementById("humidity-text").innerText = (data.humidity ?? "--") + "%";
+          document.getElementById("temperature-text").innerText = (data.temperature ?? "--") + "°C";
+          document.getElementById("soil-moisture-text").innerText = (data.soil_moisture ?? "--") + "%";
+          document.getElementById("evaporation-text").innerText = (data.predicted_evaporation_speed !== undefined) ? data.predicted_evaporation_speed.toFixed(4) + " units/s" : "--";
+        } else {
+          document.getElementById("humidity-text").innerText = "device inactive";
+          document.getElementById("temperature-text").innerText = "device inactive";
+          document.getElementById("soil-moisture-text").innerText = "device inactive";
+          document.getElementById("evaporation-text").innerText = "device inactive";
         }
-      } catch (error) {
-        console.error("Failed to fetch DHT11 data:", error);
-      }
+      };
+
+      eventSource.onerror = function() {
+        console.error("SSE connection lost. Reconnecting...");
+        updateStatusUI(false);
+      };
     }
 
     async function updateSoilMoisture() {
@@ -380,11 +442,10 @@
 
     // Initialize Chart and configure intervals
     initCharts();
-    updateDashBoard();
+    initSSE();
     updateAllCharts();
+    updateAllGauges();
 
-    // Live telemetry interval: 3 seconds
-    setInterval(updateDashBoard, 3000);
     // Historical chart persistence interval: 10 seconds
     setInterval(updateAllCharts, 10000);
     // Gauge persistence polling: 10 seconds

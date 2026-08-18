@@ -12,6 +12,7 @@ if str(BASE_DIR) not in sys.path:
 from app.database import get_db, init_db
 from app.mqtt import start_mqtt
 from app.background_workers.db_cleanup_worker import telemetry_cleanup_worker
+from app.background_workers.device_status_worker import device_status_worker
 from app.routes.pages import router as pages_router
 from app.routes.api import router as api_router
 
@@ -26,6 +27,7 @@ def create_app() -> FastAPI:
         init_db()
         start_mqtt()
         asyncio.create_task(telemetry_cleanup_worker())
+        asyncio.create_task(device_status_worker())
 
     @app.get("/healthcheck")
     async def health_check(db=Depends(get_db)):

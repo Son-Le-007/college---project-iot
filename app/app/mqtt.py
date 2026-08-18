@@ -32,7 +32,7 @@ def on_message(client, userdata, msg):
     topic = msg.topic
     payload = msg.payload.decode()
     
-    print(f"📩 [MQTT] Incoming on {topic}")
+    print(f"📩 [MQTT] Received message on '{topic}': {payload}")
     
     # Check if we have a service function ready for this topic
     if topic in TOPIC_ROUTER:

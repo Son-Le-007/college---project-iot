@@ -2,8 +2,10 @@ version: '3.8'
 
 services:
   college-iot-project-mosquitto:
-    image: eclipse-mosquitto:1.6
+    image: eclipse-mosquitto:2.0
     container_name: college-iot-project-mosquitto
     ports:
       - "1883:1883"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
     restart: unless-stopped

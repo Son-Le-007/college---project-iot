@@ -1,10 +1,8 @@
-{% extends "base.html" %}
-
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <section class="hero">
   <p class="eyebrow">SSR App Skeleton</p>
   <h1>{{ project_name }}</h1>
-  <p class="lead">{{ subtitle }}</p>  
+  <p class="lead">{{ subtitle }}</p>
 
   <div class="card-grid">
     <article class="card">
@@ -22,51 +20,326 @@
   </div>
 
   <div class="card">
-    <h3>Cảm biến DHT11</h3>
-    <p>Độ ẩm không khí: <span id="humidity-text">--</span>%</p>
-    <p>Nhiệt độ: <span id="temperature-text">--</span>°C</p>
+    <h3>
+      Device Status:
+      <span id="device-status-text" style="font-weight: bold; color: gray"
+        >CHECKING</span
+      >
+    </h3>
   </div>
 
   <div class="card">
-    <p>Độ ẩm đất: <span id="soil-moisture-text">--</span>%</p>
+    <h3>Cảm biến DHT11</h3>
+    <p>Độ ẩm không khí: <span id="humidity-text">--</span></p>
+    <p>Nhiệt độ: <span id="temperature-text">--</span></p>
   </div>
 
+  <div class="card">
+    <p>Độ ẩm đất: <span id="soil-moisture-text">--</span></p>
+  </div>
+
+  <div class="card-grid" style="margin-top: 20px;">
+    <div class="card" style="text-align: center;">
+      <h3>Gauge Nhiệt độ (Persisted)</h3>
+      <div style="position: relative; height: 160px; width: 100%;">
+        <canvas id="temp-gauge-chart"></canvas>
+        <div id="temp-gauge-text" style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 1.25rem; font-weight: bold;">--</div>
+      </div>
+    </div>
+    <div class="card" style="text-align: center;">
+      <h3>Gauge Độ ẩm (Persisted)</h3>
+      <div style="position: relative; height: 160px; width: 100%;">
+        <canvas id="humidity-gauge-chart"></canvas>
+        <div id="humidity-gauge-text" style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 1.25rem; font-weight: bold;">--</div>
+      </div>
+    </div>
+    <div class="card" style="text-align: center;">
+      <h3>Gauge Ánh sáng (Persisted)</h3>
+      <div style="position: relative; height: 160px; width: 100%;">
+        <canvas id="light-gauge-chart"></canvas>
+        <div id="light-gauge-text" style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 1.25rem; font-weight: bold;">--</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 20px">
+    <h3>Biểu đồ nhiệt độ (Dữ liệu lưu trữ)</h3>
+    <div style="position: relative; height: 300px; width: 100%">
+      <canvas id="temperature-chart"></canvas>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 20px">
+    <h3>Biểu đồ độ ẩm (Dữ liệu lưu trữ)</h3>
+    <div style="position: relative; height: 300px; width: 100%">
+      <canvas id="humidity-chart"></canvas>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 20px">
+    <h3>Biểu đồ ánh sáng (Dữ liệu lưu trữ)</h3>
+    <div style="position: relative; height: 300px; width: 100%">
+      <canvas id="light-chart"></canvas>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
   <script>
+    let tempChartInstance = null;
+    let humidityChartInstance = null;
+    let lightChartInstance = null;
+
+    let tempGaugeInstance = null;
+    let humidityGaugeInstance = null;
+    let lightGaugeInstance = null;
+
+    let deviceActive = false; // Shared global state to check if device is active
+    const WINDOW_SECONDS = 300;
+
+    function createGaugeConfig(label, maxVal, color) {
+      return {
+        type: "doughnut",
+        data: {
+          labels: [label, "Remaining"],
+          datasets: [{
+            data: [0, maxVal],
+            backgroundColor: [color, "#e0e0e0"],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          circumference: 180,
+          rotation: 270,
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false }
+          },
+          cutout: "80%"
+        }
+      };
+    }
+
+    function createChartConfig(label, color, minVal, maxVal) {
+      return {
+        type: "line",
+        data: {
+          datasets: [
+            {
+              label: label,
+              data: [],
+              borderColor: color,
+              backgroundColor: color
+                .replace(")", ", 0.2)")
+                .replace("rgb", "rgba"),
+              tension: 0.2,
+              fill: true,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              type: "time",
+              time: { unit: "minute", displayFormats: { minute: "HH:mm:ss" } },
+              title: { display: true, text: "Thời gian" },
+            },
+            y: {
+              title: { display: true, text: label },
+              suggestedMin: minVal,
+              suggestedMax: maxVal,
+            },
+          },
+        },
+      };
+    }
+
+    function initCharts() {
+      tempChartInstance = new Chart(
+        document.getElementById("temperature-chart").getContext("2d"),
+        createChartConfig("Nhiệt độ (°C)", "rgb(255, 99, 132)", 15, 45),
+      );
+      humidityChartInstance = new Chart(
+        document.getElementById("humidity-chart").getContext("2d"),
+        createChartConfig("Độ ẩm (%)", "rgb(54, 162, 235)", 20, 90),
+      );
+      lightChartInstance = new Chart(
+        document.getElementById("light-chart").getContext("2d"),
+        createChartConfig("Ánh sáng", "rgb(255, 205, 86)", 0, 1024),
+      );
+
+      // Initialize Gauge Charts
+      tempGaugeInstance = new Chart(
+        document.getElementById("temp-gauge-chart").getContext("2d"),
+        createGaugeConfig("Nhiệt độ", 50, "rgb(255, 99, 132)")
+      );
+      humidityGaugeInstance = new Chart(
+        document.getElementById("humidity-gauge-chart").getContext("2d"),
+        createGaugeConfig("Độ ẩm", 100, "rgb(54, 162, 235)")
+      );
+      lightGaugeInstance = new Chart(
+        document.getElementById("light-gauge-chart").getContext("2d"),
+        createGaugeConfig("Ánh sáng", 1024, "rgb(255, 205, 86)")
+      );
+    }
+
+    async function updateGauge(instance, textId, endpoint, maxVal, unit = "") {
+      const textEl = document.getElementById(textId);
+      
+      if (!deviceActive) {
+        textEl.innerText = "device inactive";
+        if (instance) {
+          instance.data.datasets[0].data = [0, maxVal];
+          instance.update("none");
+        }
+        return;
+      }
+
+      try {
+        const response = await fetch(endpoint);
+        const data = await response.json();
+        
+        if (data && data.length > 0 && data[0].value !== undefined) {
+          const val = data[0].value;
+          textEl.innerText = `${val}${unit}`;
+          if (instance) {
+            instance.data.datasets[0].data = [val, Math.max(0, maxVal - val)];
+            instance.update("none");
+          }
+        } else {
+          textEl.innerText = "--";
+        }
+      } catch (e) {
+        console.error(`Failed to fetch gauge from ${endpoint}:`, e);
+      }
+    }
+
+    async function updateAllGauges() {
+      await Promise.all([
+        updateGauge(tempGaugeInstance, "temp-gauge-text", "/api/metrics/persisted/gauge/temperature", 50, "°C"),
+        updateGauge(humidityGaugeInstance, "humidity-gauge-text", "/api/metrics/persisted/gauge/humidity", 100, "%"),
+        updateGauge(lightGaugeInstance, "light-gauge-text", "/api/metrics/persisted/gauge/ambient_light", 1024, "")
+      ]);
+    }
+
+    async function updateMetricChart(instance, endpoint) {
+      try {
+        const response = await fetch(`${endpoint}?window=${WINDOW_SECONDS}`);
+        const data = await response.json();
+        const points = data.map((item) => ({
+          x: new Date(item.timestamp).getTime(),
+          y: item.value,
+        }));
+        if (instance) {
+          const now = Date.now();
+          instance.data.datasets[0].data = points;
+          instance.options.scales.x.min = now - WINDOW_SECONDS * 1000;
+          instance.options.scales.x.max = now;
+          instance.update("none");
+        }
+      } catch (e) {
+        console.error(`Failed to fetch ${endpoint}:`, e);
+      }
+    }
+
+    async function updateAllCharts() {
+      await Promise.all([
+        updateMetricChart(
+          tempChartInstance,
+          "/api/metrics/persisted/chart/temperature",
+        ),
+        updateMetricChart(
+          humidityChartInstance,
+          "/api/metrics/persisted/chart/humidity",
+        ),
+        updateMetricChart(
+          lightChartInstance,
+          "/api/metrics/persisted/chart/ambient_light",
+        ),
+      ]);
+    }
+
+    function updateStatusUI(active) {
+      deviceActive = active;
+      const statusText = document.getElementById("device-status-text");
+      if (active) {
+        statusText.innerText = "ACTIVE";
+        statusText.style.color = "green";
+      } else {
+        statusText.innerText = "INACTIVE";
+        statusText.style.color = "red";
+      }
+    }
+
     async function updateDHT11() {
       try {
-        const respond =  await fetch('/api/dht11');
-        const result = await respond.json(); // Extracts { status: "success", data: { temperature, humidity } }
+        const respond = await fetch("/api/dht11");
+        const result = await respond.json();
 
         if (result.status === "success" && result.data) {
-          document.getElementById("humidity-text").innerText = result.data.humidity ?? "--";
-          document.getElementById("temperature-text").innerText = result.data.temperature ?? "--";
+          const isActive = result.data.active;
+          updateStatusUI(isActive);
+
+          if (isActive) {
+            document.getElementById("humidity-text").innerText =
+              (result.data.humidity ?? "--") + "%";
+            document.getElementById("temperature-text").innerText =
+              (result.data.temperature ?? "--") + "°C";
+          } else {
+            document.getElementById("humidity-text").innerText =
+              "device inactive";
+            document.getElementById("temperature-text").innerText =
+              "device inactive";
+          }
         }
-      } catch(error) {
+      } catch (error) {
         console.error("Failed to fetch DHT11 data:", error);
       }
     }
 
     async function updateSoilMoisture() {
       try {
-        const respond = await fetch('/api/moisture');
+        const respond = await fetch("/api/moisture");
         const result = await respond.json();
 
         if (result.status === "success" && result.data) {
-          document.getElementById("soil-moisture-text").innerText = result.data.soil_moisture ?? "--";
+          const isActive = result.data.active;
+          updateStatusUI(isActive);
+
+          if (isActive) {
+            document.getElementById("soil-moisture-text").innerText =
+              (result.data.soil_moisture ?? "--") + "%";
+          } else {
+            document.getElementById("soil-moisture-text").innerText =
+              "device inactive";
+          }
         }
-      } catch(error) {
+      } catch (error) {
         console.error("Failed to fetch soil moisture data", error);
       }
     }
 
     async function updateDashBoard() {
-      await Promise.all([updateDHT11()], updateSoilMoisture());
+      await Promise.all([updateDHT11(), updateSoilMoisture()]);
+      // Run gauges check immediately when Dashboard updates device status
+      await updateAllGauges();
     }
 
-    // Fetch immediately on load, then poll every 2 seconds
+    // Initialize Chart and configure intervals
+    initCharts();
     updateDashBoard();
-    setInterval(updateDashBoard, 3000);
-  </script>
+    updateAllCharts();
 
+    // Live telemetry interval: 3 seconds
+    setInterval(updateDashBoard, 3000);
+    // Historical chart persistence interval: 10 seconds
+    setInterval(updateAllCharts, 10000);
+    // Gauge persistence polling: 10 seconds
+    setInterval(updateAllGauges, 10000);
+  </script>
 </section>
 {% endblock %}

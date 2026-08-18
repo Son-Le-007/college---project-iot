@@ -5,7 +5,7 @@ from app.database import supabase
 async def telemetry_cleanup_worker():
     while True:
         try:
-            cutoff_time = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+            cutoff_time = (datetime.now(timezone.utc) - timedelta(days=14)).isoformat()
             supabase.table("telemetry").delete().lt("created_at", cutoff_time).execute()
             print(f"🧹 [Worker] Pruned telemetry older than: {cutoff_time}")
         except Exception as e:

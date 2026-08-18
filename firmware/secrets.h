@@ -6,7 +6,7 @@
 #define WIFI_PASSWORD ""
 
 // MQTT Cloud Credentials
-#define MQTT_HOST "host.wokwi.internal"
+#define MQTT_HOST "192.168.1.33"
 #define MQTT_PORT 1883
 
 #endif

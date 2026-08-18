@@ -32,4 +32,5 @@ def insert_telemetry(payload: dict):
         "ambient_light": payload.get("ambient_light"),
     }
 
+    print(f"☁️ [Database] Attempting cloud insert: {row}")
     return supabase.table("telemetry").insert(row).execute()

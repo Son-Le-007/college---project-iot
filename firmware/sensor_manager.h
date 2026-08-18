@@ -11,4 +11,6 @@ void initSensor();
 DHTData readDHTData();
 float readSoilMoisturePercent();
 
+float readAmbientLightPercent(); 
+
 #endif

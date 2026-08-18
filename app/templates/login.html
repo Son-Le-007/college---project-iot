@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero" style="max-width: 400px; margin: auto; padding: 40px;">
+  <h1 style="text-align: center; font-size: 2rem;">Đăng nhập</h1>
+  <form action="/api/login" method="POST" style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
+    <div>
+        <label style="font-weight: bold;">Email</label>
+        <input type="email" name="email" required style="width: 100%; padding: 10px; border-radius: 5px;">
+    </div>
+    <div>
+        <label style="font-weight: bold;">Password</label>
+        <input type="password" name="password" required style="width: 100%; padding: 10px; border-radius: 5px;">
+    </div>
+    <button type="submit" style="padding: 12px; background: var(--text); color: white; border-radius: 5px; cursor: pointer;">Đăng nhập</button>
+    <a href="/register" style="text-align: center; color: var(--text);">Chưa có tài khoản? Đăng ký ngay</a>
+  </form>
+</section>
+{% endblock %}

@@ -114,8 +114,9 @@ void loop()
     client.loop();
     
     DHTData dhtData = readDHTData();
-    float ambient_light = analogRead(LDRPIN);
     float soilMoisturePercent = readSoilMoisturePercent();
+    float ambient_light = readAmbientLightPercent();
+    
     runTuoiCayTuDong(soilMoisturePercent);
 
     if (!dhtData.isValid)

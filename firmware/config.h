@@ -7,9 +7,9 @@
 #define DHTPIN 21
 #define SOLI_MOISTURE_PIN 35
 #define RELAY_PIN 34 // PUMP
-#define BUZZER_PIN 2 // 
-#define LDRPIN 34     
 #define BUZZER_PIN 2 
+#define LDRPIN 34     
+
 
 #define DHTTYPE DHT11
 

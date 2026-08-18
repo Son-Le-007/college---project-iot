@@ -87,7 +87,6 @@ async def logout_api():
     response = RedirectResponse(url="/login", status_code=302)
     response.delete_cookie("access_token")
     return response
-    }
 
 @router.get("/metrics/persisted/chart/temperature")
 async def get_persisted_temperature(window: int = Query(3600, description="Window in seconds")):

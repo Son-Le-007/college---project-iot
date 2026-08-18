@@ -7,6 +7,7 @@
 #include "config.h"
 #include "sensor_manager.h"
 #include "storage_manager.h"
+#include "wifi_manager_Config.h"
 
 #define LDRPIN 1
 
@@ -36,7 +37,7 @@ void runTuoiCayTuDong(float currentSoilMoisturePercent) {
     }
 }
 
-void setup_wifi()
+void setup_wifi_debug()
 {
     Serial.print("Connecting to WiFi");
 
@@ -83,10 +84,10 @@ void mqttCallBack(char* topic, byte* payload, unsigned int length) {
     if (String(topic) == "/threshold/set") {
         float newThrehold = message.toFloat();
 
-        if (newThrehold > 0 && newnewThrehold <= 100) {
+        if (newThrehold > 0 && newThrehold <= 100) {
             if (newThrehold != currentTherehold) {
                 currentTherehold = newThrehold;
-                saveMoistureThrehold();
+                saveMoistureThrehold(newThrehold);
                 Serial.println("Da cap nhat nguong moi thanh cong!");
             }
         }
@@ -120,11 +121,16 @@ void setup()
     setup_wifi();
     Serial.println(MQTT_HOST);
     client.setServer(MQTT_HOST, MQTT_PORT);
-    client.setCallback(mqttCallback);
+    client.setCallback(mqttCallBack);
 }
 
 void loop()
 {
+    wifi_loop();
+    if (WiFi.status() != WL_CONNECTED) {
+        return;
+    }
+
     if (!client.connected())
     {
         reconnect();

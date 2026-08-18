@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <PubSubClient.h>
@@ -61,6 +62,8 @@ void reconnect()
         if (client.connect("esp32-s3-cam"))
         {
             Serial.println(" connected");
+            client.subscribe("/threshold/set"); 
+            client.subscribe("garden/control/buzzer"); 
         }
         else
         {
@@ -88,8 +91,23 @@ void mqttCallBack(char* topic, byte* payload, unsigned int length) {
             }
         }
     }
-    
+    if (String(topic) == "garden/control/buzzer") {
+        StaticJsonDocument<200> doc;
+        DeserializationError error = deserializeJson(doc, message);
+        
+        if (!error) {
+            String status = doc["status"];
+            if (status == "ON") {
+                digitalWrite(BUZZER_PIN, HIGH); // Cấp điện cho còi kêu
+                Serial.println("🔔 WEB RA LỆNH: BẬT CÒI!");
+            } else if (status == "OFF") {
+                digitalWrite(BUZZER_PIN, LOW);  // Ngắt điện còi
+                Serial.println("🔕 WEB RA LỆNH: TẮT CÒI!");
+            }
+        }
+    }
 }
+
 
 void setup()
 {
@@ -97,7 +115,8 @@ void setup()
 
     initSensor();
     currentTherehold = loadMoistureThrehold();
-
+    pinMode(BUZZER_PIN, OUTPUT);
+    digitalWrite(BUZZER_PIN, LOW); 
     setup_wifi();
     Serial.println(MQTT_HOST);
     client.setServer(MQTT_HOST, MQTT_PORT);

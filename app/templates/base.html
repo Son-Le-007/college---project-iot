@@ -1,14 +1,70 @@
 <!doctype html>
 <html lang="vi">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{{ project_name if project_name else "College IoT" }}</title>
-    <link rel="stylesheet" href="/static/css/main.css" />
-  </head>
-  <body>
-    <main class="shell">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Garden | Dark Mode UI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0f172a;       /* Nền đen sâu */
+      --panel-bg: #1e293b;       /* Nền card nổi */
+      --text-main: #f8fafc;      /* Chữ trắng */
+      --text-muted: #94a3b8;     /* Chữ xám */
+      --accent: #3b82f6;         /* Màu xanh công nghệ */
+      --danger: #ef4444;         /* Đỏ báo động */
+      --success: #10b981;        /* Xanh lá cây an toàn */
+      --border-color: #334155;   /* Viền xám tối */
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+    }
+    .shell { padding: 40px 20px; min-height: 100vh; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .card {
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+      transition: transform 0.2s;
+    }
+    .card:hover { transform: translateY(-5px); }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    h2, h3 { margin-top: 0; color: var(--text-main); }
+    input {
+      width: 100%; padding: 12px; border-radius: 8px;
+      background: var(--bg-color); border: 1px solid var(--border-color);
+      color: var(--text-main); font-size: 1rem;
+    }
+    button {
+      padding: 12px 20px; border-radius: 8px; border: none;
+      font-weight: bold; cursor: pointer; transition: 0.2s;
+    }
+    .btn-primary { background-color: var(--accent); color: white; }
+    .btn-primary:hover { background-color: #2563eb; }
+    .btn-danger { background-color: var(--danger); color: white; }
+    .btn-danger:hover { background-color: #dc2626; }
+    .btn-dark { background-color: #475569; color: white; }
+    .btn-dark:hover { background-color: #334155; }
+    .stat-value { font-size: 2.5rem; font-weight: 700; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="container">
       {% block content %}{% endblock %}
-    </main>
-  </body>
-  </html>
+    </div>
+  </main>
+</body>
+</html>

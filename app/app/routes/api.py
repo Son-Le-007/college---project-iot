@@ -9,6 +9,7 @@ from fastapi import Form, HTTPException
 from fastapi.responses import RedirectResponse
 from app.database import get_db
 from app.core.security import verify_password, create_access_token, hash_password
+from app.mqtt import mqtt_client 
 
 router = APIRouter()
 
@@ -90,6 +91,15 @@ async def logout_api():
     response.delete_cookie("access_token")
     return response
 
+@router.post("/buzzer")
+async def toggle_buzzer(data: dict):
+    action = data.get("action")
+    if action in ["ON", "OFF"]:
+        mqtt_client.publish("garden/control/buzzer", json.dumps({"status": action}))
+        return {"status": "success", "message": f"Còi đã {action}"}
+    return {"status": "error"}
+
+
 @router.get("/stream")
 async def telemetry_stream():
     """SSE endpoint streaming real-time metrics and AI inferences."""
@@ -100,6 +110,7 @@ async def telemetry_stream():
                 "temperature": cache.get_cache_DHT_temperature(),
                 "humidity": cache.get_cache_DHT_humidity(),
                 "soil_moisture": cache.get_cache_soil_moisture(),
+                "ambient_light": cache.get_cache_ambient_light(), 
                 "predicted_evaporation_speed": cache.get_cache_predicted_evaporation()
             }
             yield f"data: {json.dumps(payload)}\n\n"

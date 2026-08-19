@@ -38,6 +38,9 @@ def get_cache_DHT_humidity() -> float:
 def get_cache_soil_moisture() -> float:
     return _in_memory_cache.get("soil_moisture", 0.0)
 
+def get_cache_ambient_light() -> float:
+    return _in_memory_cache.get("ambient_light", 0.0) 
+
 def get_cache_predicted_evaporation() -> float:
     return _in_memory_cache.get("predicted_evaporation_speed", 0.0)
 

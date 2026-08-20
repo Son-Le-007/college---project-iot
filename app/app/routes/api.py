@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from fastapi.responses import StreamingResponse
 import asyncio
 import json
@@ -59,11 +59,19 @@ async def login_api(request: Request, email: str = Form(...), password: str = Fo
     res = db.table("users").select("*").eq("email", email).execute()
     
     if not res.data: 
-        return request.app.state.templates.TemplateResponse("login.html", {"request": request, "error": "Email này không tồn tại trong hệ thống!"})
+        return request.app.state.templates.TemplateResponse(
+            request=request, 
+            name="login.html", 
+            context={"request": request, "error": "Email này không tồn tại trong hệ thống!"}
+        )
         
     user = res.data[0]
     if not verify_password(password, user["password_hash"]):
-        return request.app.state.templates.TemplateResponse("login.html", {"request": request, "error": "Sai mật khẩu, vui lòng thử lại!"})
+        return request.app.state.templates.TemplateResponse(
+            request=request, 
+            name="login.html", 
+            context={"request": request, "error": "Sai mật khẩu, vui lòng thử lại!"}
+        )
         
     token = create_access_token({"sub": user["email"]})
     response = RedirectResponse(url="/dashboard", status_code=302)
@@ -73,15 +81,27 @@ async def login_api(request: Request, email: str = Form(...), password: str = Fo
 @router.post("/register")
 async def register_api(request: Request, email: str = Form(...), password: str = Form(...)):
     if len(password) < 6:
-        return request.app.state.templates.TemplateResponse("register.html", {"request": request, "error": "Mật khẩu quá yếu! Phải từ 6 ký tự trở lên."})
+        return request.app.state.templates.TemplateResponse(
+            request=request, 
+            name="register.html", 
+            context={"request": request, "error": "Mật khẩu quá yếu! Phải từ 6 ký tự trở lên."}
+        )
 
     db = get_db()
     
     if db.table("users").select("*").eq("email", email).execute().data:
-        return request.app.state.templates.TemplateResponse("register.html", {"request": request, "error": "Email này đã có người đăng ký rồi!"})
+        return request.app.state.templates.TemplateResponse(
+            request=request, 
+            name="register.html", 
+            context={"request": request, "error": "Email này đã có người đăng ký rồi!"}
+        )
         
     db.table("users").insert({"email": email, "password_hash": hash_password(password)}).execute()
-    return request.app.state.templates.TemplateResponse("login.html", {"request": request, "success": "Đăng ký thành công! Hãy đăng nhập."})
+    return request.app.state.templates.TemplateResponse(
+        request=request, 
+        name="login.html", 
+        context={"request": request, "success": "Đăng ký thành công! Hãy đăng nhập."}
+    )
 
 @router.get("/logout")
 async def logout_api():

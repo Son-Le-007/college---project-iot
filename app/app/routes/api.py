@@ -54,36 +54,34 @@ def setThreHold(data: dict):
 
 
 @router.post("/login")
-async def login_api(email: str = Form(...), password: str = Form(...)):
+async def login_api(request: Request, email: str = Form(...), password: str = Form(...)):
     db = get_db()
     res = db.table("users").select("*").eq("email", email).execute()
     
-    if not res.data:
-        raise HTTPException(status_code=400, detail="Email không tồn tại")
-
+    if not res.data: 
+        return request.app.state.templates.TemplateResponse("login.html", {"request": request, "error": "Email này không tồn tại trong hệ thống!"})
+        
     user = res.data[0]
     if not verify_password(password, user["password_hash"]):
-        raise HTTPException(status_code=400, detail="Sai Mật Khẩu")
-
+        return request.app.state.templates.TemplateResponse("login.html", {"request": request, "error": "Sai mật khẩu, vui lòng thử lại!"})
+        
     token = create_access_token({"sub": user["email"]})
     response = RedirectResponse(url="/dashboard", status_code=302)
     response.set_cookie(key="access_token", value=token, httponly=True)
     return response
 
 @router.post("/register")
-async def register_api(email: str = Form(...), password: str = Form(...)):
+async def register_api(request: Request, email: str = Form(...), password: str = Form(...)):
+    if len(password) < 6:
+        return request.app.state.templates.TemplateResponse("register.html", {"request": request, "error": "Mật khẩu quá yếu! Phải từ 6 ký tự trở lên."})
+
     db = get_db()
-    res = db.table("users").select("*").eq("email", email).execute()
     
-    if res.data:
-        raise HTTPException(status_code=400, detail="Email đã tồn tại")
+    if db.table("users").select("*").eq("email", email).execute().data:
+        return request.app.state.templates.TemplateResponse("register.html", {"request": request, "error": "Email này đã có người đăng ký rồi!"})
         
-    db.table("users").insert({
-        "email": email, 
-        "password_hash": hash_password(password)
-    }).execute()
-    
-    return RedirectResponse(url="/login", status_code=302)
+    db.table("users").insert({"email": email, "password_hash": hash_password(password)}).execute()
+    return request.app.state.templates.TemplateResponse("login.html", {"request": request, "success": "Đăng ký thành công! Hãy đăng nhập."})
 
 @router.get("/logout")
 async def logout_api():

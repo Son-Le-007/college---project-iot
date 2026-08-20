@@ -1,18 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="hero" style="max-width: 400px; margin: auto; padding: 40px;">
-  <h1 style="text-align: center; font-size: 2rem;">Đăng ký</h1>
-  <form action="/api/register" method="POST" style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
+<section class="hero" style="max-width: 400px; margin: auto; padding: 40px; background: #1e293b; border-radius: 16px; border: 1px solid #334155;">
+  <h1 style="text-align: center; font-size: 2rem; color: #f8fafc; margin-top: 0;">Đăng ký</h1>
+  <p style="text-align: center; color: #94a3b8; margin-bottom: 20px;">Tạo tài khoản Smart Garden</p>
+  
+  {% if error %}
+  <div style="background: #7f1d1d; border: 1px solid #ef4444; color: #fca5a5; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 15px; font-weight: bold;">
+      ⚠️ {{ error }}
+  </div>
+  {% endif %}
+
+  <form action="/api/register" method="POST" style="display: flex; flex-direction: column; gap: 16px;">
     <div>
-        <label style="font-weight: bold;">Email</label>
-        <input type="email" name="email" required style="width: 100%; padding: 10px; border-radius: 5px;">
+        <label style="font-weight: bold; color: #cbd5e1;">Email</label>
+        <input type="email" name="email" placeholder="ví dụ: admin@gmail.com" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; margin-top: 8px;">
     </div>
     <div>
-        <label style="font-weight: bold;">Password</label>
-        <input type="password" name="password" required style="width: 100%; padding: 10px; border-radius: 5px;">
+        <label style="font-weight: bold; color: #cbd5e1;">Mật khẩu</label>
+        <input type="password" name="password" placeholder="Phải từ 6 ký tự trở lên..." required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; margin-top: 8px;">
     </div>
-    <button type="submit" style="padding: 12px; background: #2563eb; color: white; border-radius: 5px; cursor: pointer;">Tạo tài khoản</button>
-    <a href="/login" style="text-align: center; color: var(--text);">Đã có tài khoản? Đăng nhập</a>
+    <button type="submit" style="padding: 14px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; margin-top: 10px;">Tạo Tài Khoản</button>
+    <a href="/login" style="text-align: center; color: #94a3b8; text-decoration: none; margin-top: 10px;">Đã có tài khoản? <span style="color: #38bdf8;">Đăng nhập</span></a>
   </form>
 </section>
 {% endblock %}

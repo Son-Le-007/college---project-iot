@@ -37,8 +37,21 @@ float readSoilMoisturePercent() {
 }
 
 
-float readAmbientLightPercent() {
+float readAmbientLightLux() {
   int raw_light = analogRead(LDRPIN);
-  float light_percent = map(raw_light, 0, 4095, 0, 100); 
-  return (float)constrain(light_percent, 0, 100);
+  if (raw_light == 0 || raw_light == 4095) {
+      return 0.0;
+  }
+  const float V_IN = 3.3;             // Điện áp cấp cho ESP32
+  const float ADC_RES = 4095.0;       // Độ phân giải ADC 12-bit
+  const float R_PULLDOWN = 10000.0;   // Trở kéo 10k Ohm trên module
+
+  float voltage = (raw_light / ADC_RES) * V_IN;
+  float ldr_resistance = R_PULLDOWN * voltage / (V_IN - voltage);
+  const float GAMMA = 0.7;
+  const float RL10 = 50.0; // Điện trở LDR ở 10 Lux (kOhm)
+  
+  float lux = pow(RL10 * 1000.0 * pow(10, GAMMA) / ldr_resistance, (1 / GAMMA));
+  
+  return lux;
 }

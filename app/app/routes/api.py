@@ -9,7 +9,8 @@ from fastapi import Form, HTTPException
 from fastapi.responses import RedirectResponse
 from app.database import get_db
 from app.core.security import verify_password, create_access_token, hash_password
-from app.mqtt import mqtt_client 
+from app.mqtt import mqtt_client
+from app.services.mail_alert import trigger_alert
 
 router = APIRouter()
 
@@ -31,6 +32,8 @@ async def getDHT11_telemetry():
     
 @router.get("/moisture")
 async def getSoilMoisture():
+    current_moisture = cache.get_cache_soil_moisture()
+    #trigger_alert()
     return {
         "status" : "success",
         "data" : {

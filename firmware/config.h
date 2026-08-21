@@ -4,11 +4,12 @@
 #include <Arduino.h>
 
 // ---------------------------- Pin Configurations ---------------------------- 
-#define DHTPIN 21
-#define SOLI_MOISTURE_PIN 35
-#define RELAY_PIN 34 // PUMP
-#define BUZZER_PIN 2 
-#define LDRPIN 34     
+#define DHTPIN 14
+#define SOLI_MOISTURE_PIN 34
+#define RELAY_PIN 26 // PUMP
+#define BUZZER_PIN 27 
+#define LDRPIN 35     
+#define PIRPIN 13
 
 
 #define DHTTYPE DHT11

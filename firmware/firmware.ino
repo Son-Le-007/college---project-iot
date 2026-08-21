@@ -24,8 +24,11 @@ float currentTherehold;
 bool pumpState = false;
 
 void runTuoiCayTuDong(float currentSoilMoisturePercent) {
+    Serial.println(currentSoilMoisturePercent);
+    Serial.println(currentTherehold);
     if (currentSoilMoisturePercent < currentTherehold) {
         if (pumpState == false) {
+            Serial.println("RElay on");
             digitalWrite(RELAY_PIN, HIGH);
             pumpState = true;
         }
@@ -116,8 +119,11 @@ void setup()
 
     initSensor();
     currentTherehold = loadMoistureThrehold();
+    pinMode(RELAY_PIN, OUTPUT);
+    digitalWrite(RELAY_PIN, LOW); 
     pinMode(BUZZER_PIN, OUTPUT);
     digitalWrite(BUZZER_PIN, LOW); 
+    pinMode(PIRPIN, INPUT);
     setup_wifi();
     Serial.println(MQTT_HOST);
     client.setServer(MQTT_HOST, MQTT_PORT);
@@ -140,7 +146,8 @@ void loop()
     
     DHTData dhtData = readDHTData();
     float soilMoisturePercent = readSoilMoisturePercent();
-    float ambient_light = readAmbientLightPercent();
+    float ambient_light = readAmbientLightLux();
+    bool isMotion = (digitalRead(PIRPIN) == HIGH) ? 1 : 0;
     
     runTuoiCayTuDong(soilMoisturePercent);
 
@@ -156,6 +163,7 @@ void loop()
     payload += "\"humidity\":" + String(dhtData.humidity, 1) + ",";
     payload += "\"soil_moisture\":" + String(soilMoisturePercent, 1) +",";
     payload += "\"ambient_light\":" + String(ambient_light, 1);
+    payload += "\"isMotion\":" + String(isMotion);
     payload += "}";
 
     Serial.println(payload);

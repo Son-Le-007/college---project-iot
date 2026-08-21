@@ -1,26 +1,42 @@
 {% extends "base.html" %}
-{% block content %}
-<section class="hero" style="max-width: 400px; margin: auto; padding: 40px; background: #1e293b; border-radius: 16px; border: 1px solid #334155;">
-  <h1 style="text-align: center; font-size: 2rem; color: #f8fafc; margin-top: 0;">Đăng ký</h1>
-  <p style="text-align: center; color: #94a3b8; margin-bottom: 20px;">Tạo tài khoản Smart Garden</p>
-  
-  {% if error %}
-  <div style="background: #7f1d1d; border: 1px solid #ef4444; color: #fca5a5; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 15px; font-weight: bold;">
-      ⚠️ {{ error }}
-  </div>
-  {% endif %}
 
-  <form action="/api/register" method="POST" style="display: flex; flex-direction: column; gap: 16px;">
-    <div>
-        <label style="font-weight: bold; color: #cbd5e1;">Email</label>
-        <input type="email" name="email" placeholder="ví dụ: admin@gmail.com" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; margin-top: 8px;">
-    </div>
-    <div>
-        <label style="font-weight: bold; color: #cbd5e1;">Mật khẩu</label>
-        <input type="password" name="password" placeholder="Phải từ 6 ký tự trở lên..." required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; margin-top: 8px;">
-    </div>
-    <button type="submit" style="padding: 14px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; margin-top: 10px;">Tạo Tài Khoản</button>
-    <a href="/login" style="text-align: center; color: #94a3b8; text-decoration: none; margin-top: 10px;">Đã có tài khoản? <span style="color: #38bdf8;">Đăng nhập</span></a>
-  </form>
-</section>
+{% block content %}
+<div style="max-width: 400px; margin: 60px auto;">
+  
+  <div class="text-center mb-6">
+    <h1 style="font-size: 2rem;">Đăng ký</h1>
+    <p>Tạo tài khoản hệ thống</p>
+  </div>
+
+  <div class="card">
+    {% if error %}
+      <div class="alert alert-error text-center">
+        ⚠️ {{ error }}
+      </div>
+    {% endif %}
+    <form action="/api/register" method="POST" class="flex flex-col gap-4">
+      <div>
+        <label class="form-label">Địa chỉ Email</label>
+        <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+      </div>
+      
+      <div>
+        <label class="form-label">Mật khẩu bảo mật</label>
+        <input type="password" name="password" class="form-control" placeholder="Từ 6 ký tự trở lên" required>
+      </div>
+      
+      <button type="submit" class="btn btn-primary mt-4" style="width: 100%; background-color: var(--text-main);">
+        Tạo Tài Khoản
+      </button>
+
+      <div class="text-center mt-4">
+        <span style="color: var(--text-muted); font-size: 0.9rem;">Đã có tài khoản?</span>
+        <a href="/login" style="color: var(--primary); text-decoration: none; font-weight: 500; font-size: 0.9rem;">
+          Về Đăng nhập
+        </a>
+      </div>
+    </form>
+  </div>
+
+</div>
 {% endblock %}

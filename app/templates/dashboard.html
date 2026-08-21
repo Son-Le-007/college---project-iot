@@ -211,36 +211,6 @@
     margin-bottom: 32px;
   "
 >
-  <div
-    class="card"
-    style="
-      background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
-      border-color: #bfdbfe;
-    "
-  >
-    <h3 style="color: #4f46e5; font-size: 0.85rem; text-transform: uppercase">
-      ✨ Trợ lý AI
-    </h3>
-    <div class="mt-6 text-center">
-      <div
-        id="evaporation-text"
-        style="
-          font-size: 2.2rem;
-          font-weight: 700;
-          color: #4f46e5;
-          line-height: 1;
-        "
-      >
-        --
-      </div>
-      <div
-        style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px"
-      >
-        Tốc độ bay hơi dự kiến (units/s)
-      </div>
-    </div>
-  </div>
-
   <div class="card">
     <h3
       style="
@@ -296,6 +266,25 @@
     >
       Hệ thống đang chờ lệnh...
     </p>
+  </div>
+</div>
+
+<!-- NEW ROW: AI PREDICTION -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 32px;">
+  <div class="card" style="border-color: #c084fc;">
+    <h3 style="color: #c084fc; padding-bottom: 8px; border-bottom: 1px solid #581c87;">Tốc độ bay hơi dự đoán</h3>
+    <div style="text-align: center; margin-top: 15px;">
+      <div class="metric-value" id="evaporation-text" style="color: #c084fc; font-size: 3rem; font-weight: bold;">--</div>
+      <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">unit / s</div>
+    </div>
+  </div>
+
+  <div class="card" id="mold-risk-card" style="border-color: #10b981;">
+    <h3 id="mold-risk-title" style="color: #10b981; padding-bottom: 8px; border-bottom: 1px solid #064e3b;">Xác suất bị mốc dự đoán</h3>
+    <div style="text-align: center; margin-top: 15px;">
+      <div class="metric-value" id="mold-risk-text" style="color: #10b981; font-size: 3rem; font-weight: bold;">--</div>
+      <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;"></div>
+    </div>
   </div>
 </div>
 
@@ -579,27 +568,61 @@
         if (motionEl) {
           const hasMotion = Boolean(data.is_motion);
           motionEl.innerText = hasMotion ? "CÓ NGƯỜI" : "KHÔNG CÓ NGƯỜI";
-          motionEl.style.color = hasMotion ? "#ef4444" : "#10b981"; // Red if detected, Green if clear
+          motionEl.style.color = hasMotion ? "#ef4444" : "#10b981";
         }
 
         const evapEl = document.getElementById("evaporation-text");
         if (evapEl) {
           evapEl.innerText = (data.predicted_evaporation_speed !== undefined) ? data.predicted_evaporation_speed.toFixed(4) : "--";
         }
+
+        // Mold Risk Styling logic
+        const moldEl = document.getElementById("mold-risk-text");
+        const moldCard = document.getElementById("mold-risk-card");
+        const moldTitle = document.getElementById("mold-risk-title");
+        if (moldEl && moldCard && moldTitle) {
+          const code = data.disease_risk_code ?? 0;
+          const label = data.disease_risk_label ?? "Low";
+          moldEl.innerText = label;
+          
+          let color = "#10b981"; // Green (Low)
+          let borderBottomColor = "#064e3b";
+          if (code === 1) {
+            color = "#eab308"; // Yellow (Medium)
+            borderBottomColor = "#713f12";
+          } else if (code === 2) {
+            color = "#ef4444"; // Red (High)
+            borderBottomColor = "#7f1d1d";
+          }
+          
+          moldEl.style.color = color;
+          moldCard.style.borderColor = color;
+          moldTitle.style.color = color;
+          moldTitle.style.borderBottomColor = borderBottomColor;
+        }
       } else {
         document.getElementById("humidity-text").innerText = "Off";
         document.getElementById("temperature-text").innerText = "Off";
         document.getElementById("soil-moisture-text").innerText = "Off";
         document.getElementById("light-text").innerText = "Off";
-        document.getElementById("evaporation-text").innerText = "Off";
-
         if (document.getElementById("motion-text")) {
           document.getElementById("motion-text").innerText = "OFF";
           document.getElementById("motion-text").style.color = "var(--text-muted)";
         }
+        if (document.getElementById("evaporation-text")) {
+          document.getElementById("evaporation-text").innerText = "OFF";
+        }
+        if (document.getElementById("mold-risk-text")) {
+          document.getElementById("mold-risk-text").innerText = "OFF";
+          document.getElementById("mold-risk-text").style.color = "var(--text-muted)";
+          document.getElementById("mold-risk-card").style.borderColor = "var(--border-color)";
+          document.getElementById("mold-risk-title").style.color = "var(--text-muted)";
+          document.getElementById("mold-risk-title").style.borderBottomColor = "var(--border-color)";
+        }
       }
     };
-    eventSource.onerror = function () {
+
+    eventSource.onerror = function() {
       updateStatusUI(false);
     };
   }
@@ -697,15 +720,18 @@
 
   async function updateGauge(instance, textId, endpoint, maxVal, unit = "") {
     const textEl = document.getElementById(textId);
-    if (!deviceActive) {
-      textEl.innerText = "OFF";
-      return;
-    }
     try {
       const response = await fetch(endpoint);
       const data = await response.json();
-      if (data && data.length > 0 && data[0].value !== undefined) {
-        const val = data[0].value;
+      
+      let val = null;
+      if (Array.isArray(data) && data.length > 0 && data[0].value !== undefined) {
+        val = data[0].value;
+      } else if (data && data.value !== undefined) {
+        val = data.value;
+      }
+
+      if (val !== null) {
         textEl.innerText = `${val}${unit}`;
         if (instance) {
           instance.data.datasets[0].data = [val, Math.max(0, maxVal - val)];
@@ -714,7 +740,9 @@
       } else {
         textEl.innerText = "--";
       }
-    } catch (e) {}
+    } catch (e) {
+      textEl.innerText = "--";
+    }
   }
 
   async function updateAllGauges() {

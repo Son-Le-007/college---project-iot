@@ -1,10 +1,11 @@
 import json
 import time
-from .cache import set_sensor_cache, get_device_active
-from .ai_inference import predict_moisture_loss_rate
+from app.services.cache import set_sensor_cache, get_device_active
+from app.services.ai_inference import predict_moisture_loss_rate, predict_mold_risk
 
 from app.database import (
     insert_telemetry,
+    get_24h_telemetry_summary_sync,
     TELEMETRY_PERSISTENCE_INTERVAL_TIME,
 )
 
@@ -27,6 +28,12 @@ def handle_sensor_telemetry(payload: str):
         
         pred = predict_moisture_loss_rate(temp, hum, moist, light)
         data["predicted_evaporation_speed"] = pred
+
+        # Live Feature Engineering and Mold Prediction
+        features_24h = get_24h_telemetry_summary_sync(temp, hum, light, moist)
+        mold_pred = predict_mold_risk(features_24h)
+        data["mold_risk_code"] = mold_pred["risk_code"]
+        data["mold_risk_label"] = mold_pred["risk_label"]
 
         # 2. Cache result
         set_sensor_cache(data)

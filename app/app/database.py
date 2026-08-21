@@ -38,6 +38,49 @@ def insert_telemetry(payload: dict):
     print(f"☁️ [Database] Attempting cloud insert: {row}")
     return supabase.table("telemetry").insert(row).execute()
 
+def get_24h_telemetry_summary_sync(current_temp: float, current_hum: float, current_light: float, current_moist: float) -> dict:
+    try:
+        cutoff_time = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+        response = (
+            supabase.table("telemetry")
+            .select("temperature, humidity, ambient_light, soil_moisture")
+            .gte("created_at", cutoff_time)
+            .execute()
+        )
+        data = response.data or []
+        if not data:
+            return {
+                "avg_temp": current_temp,
+                "avg_humidity": current_hum,
+                "avg_ambient_light": current_light,
+                "avg_soil_moisture": current_moist,
+                "high_humidity_ratio": 1.0 if current_hum >= 80.0 else 0.0
+            }
+        
+        total = len(data)
+        sum_temp = sum(row.get("temperature") or current_temp for row in data)
+        sum_hum = sum(row.get("humidity") or current_hum for row in data)
+        sum_light = sum(row.get("ambient_light") or current_light for row in data)
+        sum_moist = sum(row.get("soil_moisture") or current_moist for row in data)
+        high_hum_count = sum(1 for row in data if (row.get("humidity") or current_hum) >= 80.0)
+
+        return {
+            "avg_temp": sum_temp / total,
+            "avg_humidity": sum_hum / total,
+            "avg_ambient_light": sum_light / total,
+            "avg_soil_moisture": sum_moist / total,
+            "high_humidity_ratio": high_hum_count / total
+        }
+    except Exception as e:
+        print(f"❌ [Database] Error computing 24h summary: {e}")
+        return {
+            "avg_temp": current_temp,
+            "avg_humidity": current_hum,
+            "avg_ambient_light": current_light,
+            "avg_soil_moisture": current_moist,
+            "high_humidity_ratio": 1.0 if current_hum >= 80.0 else 0.0
+        }
+
 async def _get_latest_persisted_metric(column_name: str):
     try:
         response = (

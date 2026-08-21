@@ -2,9 +2,9 @@ from fastapi import APIRouter, Query, Request
 from fastapi.responses import StreamingResponse
 import asyncio
 import json
-from ..services import cache
-from ..database import supabase, _get_persisted_metric, _get_latest_persisted_metric
-from ..mqtt import send_mqtt_threhold
+from app.services import cache
+from app.database import supabase, _get_persisted_metric, _get_latest_persisted_metric
+from app.mqtt import send_mqtt_threhold
 from fastapi import Form, HTTPException
 from fastapi.responses import RedirectResponse
 from app.database import get_db
@@ -133,7 +133,9 @@ async def telemetry_stream():
                 "soil_moisture": cache.get_cache_soil_moisture(),
                 "ambient_light": cache.get_cache_ambient_light(),
                 "is_motion": bool(cache.get_cache_is_motion()),
-                "predicted_evaporation_speed": cache.get_cache_predicted_evaporation()
+                "predicted_evaporation_speed": cache.get_cache_predicted_evaporation(),
+                "disease_risk_code": cache.get_cache_mold_risk_code(),
+                "disease_risk_label": cache.get_cache_mold_risk_label(),
             }
             yield f"data: {json.dumps(payload)}\n\n"
             await asyncio.sleep(1)

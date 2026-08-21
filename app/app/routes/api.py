@@ -131,8 +131,8 @@ async def telemetry_stream():
                 "temperature": cache.get_cache_DHT_temperature(),
                 "humidity": cache.get_cache_DHT_humidity(),
                 "soil_moisture": cache.get_cache_soil_moisture(),
-                "ambient_light": cache.get_cache_ambient_light(), 
-                "is_motion": cache.get_cache_is_motion(),
+                "ambient_light": cache.get_cache_ambient_light(),
+                "is_motion": bool(cache.get_cache_is_motion()),
                 "predicted_evaporation_speed": cache.get_cache_predicted_evaporation()
             }
             yield f"data: {json.dumps(payload)}\n\n"

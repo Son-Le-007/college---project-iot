@@ -19,7 +19,7 @@ def set_sensor_cache(data: dict):
         _in_memory_cache["humidity"] = data.get("humidity", 0.0)
         _in_memory_cache["soil_moisture"] = data.get("soil_moisture", 0.0)
         _in_memory_cache["ambient_light"] = data.get("ambient_light", 0.0)
-        _in_memory_cache["is_motion"] = data.get("isMotion", False)
+        _in_memory_cache["is_motion"] = bool(data.get("isMotion", False))
         _in_memory_cache["predicted_evaporation_speed"] = data.get("predicted_evaporation_speed", 0.0)
         _in_memory_cache["last_received_time"] = time.time()
     

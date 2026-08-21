@@ -29,12 +29,12 @@ void runTuoiCayTuDong(float currentSoilMoisturePercent) {
     if (currentSoilMoisturePercent < currentTherehold) {
         if (pumpState == false) {
             Serial.println("RElay on");
-            digitalWrite(RELAY_PIN, HIGH);
+            digitalWrite(RELAY_PIN, LOW);
             pumpState = true;
         }
     } else {
         if (pumpState == true) {
-            digitalWrite(RELAY_PIN, LOW);
+            digitalWrite(RELAY_PIN, HIGH);
             pumpState = false;
         }
     }
@@ -162,7 +162,7 @@ void loop()
     payload += "\"temperature\":" + String(dhtData.temperature, 1) + ",";
     payload += "\"humidity\":" + String(dhtData.humidity, 1) + ",";
     payload += "\"soil_moisture\":" + String(soilMoisturePercent, 1) +",";
-    payload += "\"ambient_light\":" + String(ambient_light, 1);
+    payload += "\"ambient_light\":" + String(ambient_light, 1) +",";
     payload += "\"isMotion\":" + String(isMotion);
     payload += "}";
 

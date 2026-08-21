@@ -6,7 +6,7 @@
 #define WIFI_PASSWORD ""
 
 // MQTT Cloud Credentials
-#define MQTT_HOST "192.168.1.6"
+#define MQTT_HOST "10.179.2.11"
 #define MQTT_PORT 1883
 
 #endif

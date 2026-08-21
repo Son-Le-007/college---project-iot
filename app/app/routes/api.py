@@ -129,6 +129,7 @@ async def telemetry_stream():
                 "humidity": cache.get_cache_DHT_humidity(),
                 "soil_moisture": cache.get_cache_soil_moisture(),
                 "ambient_light": cache.get_cache_ambient_light(), 
+                "is_motion": cache.get_cache_is_motion(),
                 "predicted_evaporation_speed": cache.get_cache_predicted_evaporation()
             }
             yield f"data: {json.dumps(payload)}\n\n"
@@ -144,6 +145,10 @@ async def get_persisted_temperature(window: int = Query(3600, description="Windo
 async def get_persisted_humidity(window: int = Query(3600, description="Window in seconds")):
     return await _get_persisted_metric("humidity", window)
 
+@router.get("/metrics/persisted/chart/soil_moisture")
+async def get_persisted_soil_moisture(window: int = Query(3600, description="Window in seconds")):
+    return await _get_persisted_metric("soil_moisture", window)
+
 @router.get("/metrics/persisted/chart/ambient_light")
 async def get_persisted_ambient_light(window: int = Query(3600, description="Window in seconds")):
     return await _get_persisted_metric("ambient_light", window)
@@ -155,6 +160,10 @@ async def get_latest_temperature():
 @router.get("/metrics/persisted/gauge/humidity")
 async def get_latest_humidity():
     return await _get_latest_persisted_metric("humidity")
+
+@router.get("/metrics/persisted/gauge/soil_moisture")
+async def get_latest_soil_moisture():
+    return await _get_latest_persisted_metric("soil_moisture")
 
 @router.get("/metrics/persisted/gauge/ambient_light")
 async def get_latest_ambient_light():

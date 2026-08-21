@@ -32,6 +32,7 @@ def insert_telemetry(payload: dict):
         "humidity": payload.get("humidity"),
         "ambient_light": payload.get("ambient_light"),
         "soil_moisture": payload.get("soil_moisture"),
+        "is_motion": payload.get("isMotion"),
     }
 
     print(f"☁️ [Database] Attempting cloud insert: {row}")

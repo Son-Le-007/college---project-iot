@@ -7,6 +7,7 @@ _in_memory_cache = {
     "humidity": 0.0,
     "soil_moisture": 0.0,
     "ambient_light": 0.0,
+    "is_motion": False,
     "predicted_evaporation_speed": 0.0,
     "last_received_time": 0.0,
     "device_active": False,
@@ -18,6 +19,7 @@ def set_sensor_cache(data: dict):
         _in_memory_cache["humidity"] = data.get("humidity", 0.0)
         _in_memory_cache["soil_moisture"] = data.get("soil_moisture", 0.0)
         _in_memory_cache["ambient_light"] = data.get("ambient_light", 0.0)
+        _in_memory_cache["is_motion"] = data.get("isMotion", False)
         _in_memory_cache["predicted_evaporation_speed"] = data.get("predicted_evaporation_speed", 0.0)
         _in_memory_cache["last_received_time"] = time.time()
     
@@ -40,6 +42,9 @@ def get_cache_soil_moisture() -> float:
 
 def get_cache_ambient_light() -> float:
     return _in_memory_cache.get("ambient_light", 0.0) 
+
+def get_cache_is_motion() -> bool:
+    return _in_memory_cache.get("is_motion", False)
 
 def get_cache_predicted_evaporation() -> float:
     return _in_memory_cache.get("predicted_evaporation_speed", 0.0)

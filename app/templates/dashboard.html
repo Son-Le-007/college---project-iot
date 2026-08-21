@@ -65,7 +65,7 @@
   <!-- ROW 1: REALTIME SENSORS (Tích hợp ID 3 của Vân) -->
   <div class="card-grid">
     <div class="card">
-      <h3>☁️ Khí Hậu (DHT11)</h3>
+      <h3>☁️ Khí Hậu</h3>
       <div class="metric-box">
         <div><div class="metric-value" id="temperature-text" style="color: #fca5a5;">--</div><div class="metric-label">Nhiệt độ (°C)</div></div>
         <div style="text-align: right;"><div class="metric-value" id="humidity-text" style="color: #93c5fd;">--</div><div class="metric-label">Độ ẩm (%)</div></div>
@@ -74,19 +74,32 @@
 
     <div class="card">
       <h3>🌱 Môi Trường Đất</h3>
-      <div class="metric-box">
-        <div><div class="metric-value" id="soil-moisture-text" style="color: #86efac;">--</div><div class="metric-label">Độ ẩm đất (%)</div></div>
-        <div style="text-align: right;"><div class="metric-value" id="evaporation-text" style="color: #c084fc; font-size: 1.5rem;">--</div><div class="metric-label">Tốc độ bay hơi</div></div>
+      <div class="metric-box" style="justify-content: center;">
+        <div style="text-align: center;">
+          <div class="metric-value" id="soil-moisture-text" style="color: #86efac; font-size: 3rem;">--</div>
+          <div class="metric-label">Độ ẩm đất (%)</div>
+        </div>
       </div>
     </div>
 
     <!-- ID 3: ÁNH SÁNG -->
     <div class="card" style="border-color: #fde047;">
-      <h3 style="color: #fde047; border-bottom-color: #713f12;">☀️ Cường độ Ánh sáng (ID 3)</h3>
+      <h3 style="color: #fde047; border-bottom-color: #713f12;">☀️ Cường độ Ánh sáng</h3>
       <div class="metric-box" style="justify-content: center;">
         <div style="text-align: center;">
           <div class="metric-value" id="light-text" style="color: #fde047; font-size: 3rem;">--</div>
           <div class="metric-label">Tỉ lệ chiếu sáng (%)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CẢM BIẾN CHUYỂN ĐỘNG -->
+    <div class="card" style="border-color: #38bdf8;">
+      <h3 style="color: #38bdf8; border-bottom-color: #0369a1;">🏃 Cảm biến Chuyển động</h3>
+      <div class="metric-box" style="justify-content: center;">
+        <div style="text-align: center;">
+          <div class="metric-value" id="motion-text" style="font-size: 2rem;">--</div>
+          <div class="metric-label">Trạng thái</div>
         </div>
       </div>
     </div>
@@ -105,12 +118,25 @@
 
     <!-- ID 7: BÁO ĐỘNG AN NINH -->
     <div class="card" style="border-color: #ef4444; background: #2a1111;">
-      <h3 style="color: #fca5a5; border-bottom-color: #7f1d1d;">🚨 Hệ thống An Ninh (ID 7)</h3>
+      <h3 style="color: #fca5a5; border-bottom-color: #7f1d1d;">🚨 Hệ thống An Ninh</h3>
       <div style="display: flex; gap: 15px;">
         <button class="btn-security btn-on" onclick="controlBuzzer('ON')">BẬT CÒI</button>
         <button class="btn-security btn-off" onclick="controlBuzzer('OFF')">TẮT CÒI</button>
       </div>
       <p id="buzzer-status" style="margin-top: 10px; text-align: center; color: #fca5a5; font-size: 0.9em;">Trạng thái: Sẵn sàng</p>
+    </div>
+  </div>
+
+  <!-- NEW ROW: AI PREDICTION -->
+  <div class="card-grid">
+    <div class="card" style="border-color: #c084fc; grid-column: 1 / -1;">
+      <h3 style="color: #c084fc; border-bottom-color: #581c87;">🔮 AI dự đoán</h3>
+      <div class="metric-box" style="justify-content: center;">
+        <div style="text-align: center;">
+          <div class="metric-value" id="evaporation-text" style="color: #c084fc; font-size: 3rem;">--</div>
+          <div class="metric-label">Tốc độ bay hơi</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -124,10 +150,17 @@
       </div>
     </div>
     <div class="card" style="text-align: center">
-      <h3>Gauge Độ ẩm</h3>
+      <h3>Gauge Độ ẩm không khí</h3>
       <div style="position: relative; height: 160px; width: 100%">
         <canvas id="humidity-gauge-chart"></canvas>
         <div id="humidity-gauge-text" style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 1.25rem; font-weight: bold;">--</div>
+      </div>
+    </div>
+    <div class="card" style="text-align: center">
+      <h3>Gauge Độ ẩm đất</h3>
+      <div style="position: relative; height: 160px; width: 100%">
+        <canvas id="soil-gauge-chart"></canvas>
+        <div id="soil-gauge-text" style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 1.25rem; font-weight: bold;">--</div>
       </div>
     </div>
     <div class="card" style="text-align: center">
@@ -141,12 +174,16 @@
 
   <!-- ROW 4: LINE CHARTS (Giữ nguyên của Thuận) -->
   <div class="card" style="margin-bottom: 20px">
-    <h3>📈 Biểu đồ Nhiệt độ & Độ ẩm (Lịch sử)</h3>
+    <h3>📈 Biểu đồ Nhiệt độ</h3>
     <div style="position: relative; height: 300px; width: 100%"><canvas id="temperature-chart"></canvas></div>
   </div>
   <div class="card" style="margin-bottom: 20px">
-    <h3>📉 Biểu đồ Độ ẩm đất</h3>
+    <h3>📉 Biểu đồ Độ ẩm không khí</h3>
     <div style="position: relative; height: 300px; width: 100%"><canvas id="humidity-chart"></canvas></div>
+  </div>
+  <div class="card" style="margin-bottom: 20px">
+    <h3>🌱 Biểu đồ Độ ẩm đất</h3>
+    <div style="position: relative; height: 300px; width: 100%"><canvas id="soil-chart"></canvas></div>
   </div>
   <div class="card" style="margin-bottom: 20px">
     <h3>☀️ Biểu đồ Ánh sáng</h3>
@@ -161,8 +198,8 @@
     Chart.defaults.color = '#cbd5e1';
     Chart.defaults.borderColor = '#334155';
 
-    let tempChartInstance = null; let humidityChartInstance = null; let lightChartInstance = null;
-    let tempGaugeInstance = null; let humidityGaugeInstance = null; let lightGaugeInstance = null;
+    let tempChartInstance = null; let humidityChartInstance = null; let soilChartInstance = null; let lightChartInstance = null;
+    let tempGaugeInstance = null; let humidityGaugeInstance = null; let soilGaugeInstance = null; let lightGaugeInstance = null;
     let deviceActive = false; 
     const WINDOW_SECONDS = 300;
 
@@ -202,12 +239,20 @@
           // LẤY DỮ LIỆU ÁNH SÁNG ID 3 HIỂN THỊ
           document.getElementById("light-text").innerText = data.ambient_light ?? "--";
           
+          // LẤY DỮ LIỆU CHUYỂN ĐỘNG
+          const hasMotion = data.is_motion;
+          const motionEl = document.getElementById("motion-text");
+          motionEl.innerText = hasMotion ? "CÓ CHUYỂN ĐỘNG" : "Bình thường";
+          motionEl.style.color = hasMotion ? "#ef4444" : "#10b981";
+          
           document.getElementById("evaporation-text").innerText = (data.predicted_evaporation_speed !== undefined) ? data.predicted_evaporation_speed.toFixed(2) : "--";
         } else {
           document.getElementById("humidity-text").innerText = "Off";
           document.getElementById("temperature-text").innerText = "Off";
           document.getElementById("soil-moisture-text").innerText = "Off";
           document.getElementById("light-text").innerText = "Off";
+          document.getElementById("motion-text").innerText = "Off";
+          document.getElementById("motion-text").style.color = "#64748b";
           document.getElementById("evaporation-text").innerText = "Off";
         }
       };
@@ -229,10 +274,13 @@
 
     function initCharts() {
       tempChartInstance = new Chart(document.getElementById("temperature-chart").getContext("2d"), createChartConfig("Nhiệt độ (°C)", "rgb(252, 165, 165)", 15, 45));
-      humidityChartInstance = new Chart(document.getElementById("humidity-chart").getContext("2d"), createChartConfig("Độ ẩm đất (%)", "rgb(134, 239, 172)", 0, 100)); // Soil
-      lightChartInstance = new Chart(document.getElementById("light-chart").getContext("2d"), createChartConfig("Ánh sáng (%)", "rgb(253, 224, 71)", 0, 100)); // Light
+      humidityChartInstance = new Chart(document.getElementById("humidity-chart").getContext("2d"), createChartConfig("Độ ẩm không khí (%)", "rgb(147, 197, 253)", 0, 100));
+      soilChartInstance = new Chart(document.getElementById("soil-chart").getContext("2d"), createChartConfig("Độ ẩm đất (%)", "rgb(134, 239, 172)", 0, 100));
+      lightChartInstance = new Chart(document.getElementById("light-chart").getContext("2d"), createChartConfig("Ánh sáng (%)", "rgb(253, 224, 71)", 0, 100));
+      
       tempGaugeInstance = new Chart(document.getElementById("temp-gauge-chart").getContext("2d"), createGaugeConfig("Nhiệt độ", 50, "rgb(252, 165, 165)"));
-      humidityGaugeInstance = new Chart(document.getElementById("humidity-gauge-chart").getContext("2d"), createGaugeConfig("Độ ẩm", 100, "rgb(147, 197, 253)"));
+      humidityGaugeInstance = new Chart(document.getElementById("humidity-gauge-chart").getContext("2d"), createGaugeConfig("Độ ẩm không khí", 100, "rgb(147, 197, 253)"));
+      soilGaugeInstance = new Chart(document.getElementById("soil-gauge-chart").getContext("2d"), createGaugeConfig("Độ ẩm đất", 100, "rgb(134, 239, 172)"));
       lightGaugeInstance = new Chart(document.getElementById("light-gauge-chart").getContext("2d"), createGaugeConfig("Ánh sáng", 100, "rgb(253, 224, 71)"));
     }
 
@@ -254,7 +302,8 @@
       await Promise.all([
         updateGauge(tempGaugeInstance, "temp-gauge-text", "/api/metrics/persisted/gauge/temperature", 50, "°C"),
         updateGauge(humidityGaugeInstance, "humidity-gauge-text", "/api/metrics/persisted/gauge/humidity", 100, "%"),
-        updateGauge(lightGaugeInstance, "light-gauge-text", "/api/metrics/persisted/gauge/ambient_light", 100, "%"), // Update API của Vân
+        updateGauge(soilGaugeInstance, "soil-gauge-text", "/api/metrics/persisted/gauge/soil_moisture", 100, "%"),
+        updateGauge(lightGaugeInstance, "light-gauge-text", "/api/metrics/persisted/gauge/ambient_light", 100, "%"),
       ]);
     }
 
@@ -276,8 +325,9 @@
     async function updateAllCharts() {
       await Promise.all([
         updateMetricChart(tempChartInstance, "/api/metrics/persisted/chart/temperature"),
-        updateMetricChart(humidityChartInstance, "/api/metrics/persisted/chart/soil_moisture"), // Sửa lại chart soil của Thuận
-        updateMetricChart(lightChartInstance, "/api/metrics/persisted/chart/ambient_light"), // Chart ánh sáng của Vân
+        updateMetricChart(humidityChartInstance, "/api/metrics/persisted/chart/humidity"),
+        updateMetricChart(soilChartInstance, "/api/metrics/persisted/chart/soil_moisture"),
+        updateMetricChart(lightChartInstance, "/api/metrics/persisted/chart/ambient_light"),
       ]);
     }
 

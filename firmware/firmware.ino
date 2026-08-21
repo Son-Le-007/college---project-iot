@@ -23,6 +23,9 @@ PubSubClient client(espClient);
 float currentTherehold;
 bool pumpState = false;
 
+unsigned long lastMqttReconnectAttempt = 0;
+unsigned long lastSensorPublish = 0;
+
 void runTuoiCayTuDong(float currentSoilMoisturePercent) {
     Serial.println(currentSoilMoisturePercent);
     Serial.println(currentTherehold);
@@ -57,25 +60,23 @@ void setup_wifi_debug()
     Serial.println(WiFi.localIP());
 }
 
-void reconnect()
+bool reconnect()
 {
-    while (!client.connected())
-    {
         Serial.print("Connecting to MQTT...");
 
         if (client.connect("esp32-s3-cam"))
         {
-            Serial.println(" connected");
+            Serial.println("MQTT connected");
             client.subscribe("/threshold/set"); 
             client.subscribe("garden/control/buzzer"); 
+            return true;
         }
         else
         {
             Serial.print(" failed, rc=");
             Serial.println(client.state());
-            delay(3000);
+            return false;
         }
-    }
 }
 
 void mqttCallBack(char* topic, byte* payload, unsigned int length) {
@@ -120,12 +121,15 @@ void setup()
     initSensor();
     currentTherehold = loadMoistureThrehold();
     pinMode(RELAY_PIN, OUTPUT);
-    digitalWrite(RELAY_PIN, LOW); 
+    digitalWrite(RELAY_PIN, HIGH); 
+
     pinMode(BUZZER_PIN, OUTPUT);
     digitalWrite(BUZZER_PIN, LOW); 
     pinMode(PIRPIN, INPUT);
+
     setup_wifi();
-    Serial.println(MQTT_HOST);
+
+    // Serial.println(MQTT_HOST);
     client.setServer(MQTT_HOST, MQTT_PORT);
     client.setCallback(mqttCallBack);
 }
@@ -137,45 +141,52 @@ void loop()
         return;
     }
 
+    unsigned long now = millis();
     if (!client.connected())
     {
-        reconnect();
+        if (now - lastMqttReconnectAttempt > 5000) {
+            lastMqttReconnectAttempt = now;
+            reconnect();
+        }
+    } else {
+        client.loop();
     }
 
-    client.loop();
-    
-    DHTData dhtData = readDHTData();
-    float soilMoisturePercent = readSoilMoisturePercent();
-    float ambient_light = readAmbientLightLux();
-    bool isMotion = (digitalRead(PIRPIN) == HIGH) ? 1 : 0;
-    
-    runTuoiCayTuDong(soilMoisturePercent);
+    if (now - lastSensorPublish >= 5000) {
+        lastSensorPublish = now;
 
-    if (!dhtData.isValid)
-    {
-        Serial.println("DHT read failed");
-        delay(2000);
-        return;
+        DHTData dhtData = readDHTData();
+        float soilMoisturePercent = readSoilMoisturePercent();
+        float ambient_light = readAmbientLightLux();
+        bool isMotion = (digitalRead(PIRPIN) == HIGH) ? 1 : 0;
+        
+        runTuoiCayTuDong(soilMoisturePercent);
+
+        if (!dhtData.isValid)
+        {
+            Serial.println("DHT read failed");
+            //delay(2000);
+            return;
+        }
+
+        String payload = "{";
+        payload += "\"temperature\":" + String(dhtData.temperature, 1) + ",";
+        payload += "\"humidity\":" + String(dhtData.humidity, 1) + ",";
+        payload += "\"soil_moisture\":" + String(soilMoisturePercent, 1) +",";
+        payload += "\"ambient_light\":" + String(ambient_light, 1) +",";
+        payload += "\"isMotion\":" + String(isMotion);
+        payload += "}";
+
+        Serial.println(payload);
+
+        if (client.publish(mqtt_topic, payload.c_str()))
+        {
+            Serial.println("Publish OK");
+        }
+        else
+        {
+            Serial.println("Publish FAILED");
+        }
+
     }
-
-    String payload = "{";
-    payload += "\"temperature\":" + String(dhtData.temperature, 1) + ",";
-    payload += "\"humidity\":" + String(dhtData.humidity, 1) + ",";
-    payload += "\"soil_moisture\":" + String(soilMoisturePercent, 1) +",";
-    payload += "\"ambient_light\":" + String(ambient_light, 1) +",";
-    payload += "\"isMotion\":" + String(isMotion);
-    payload += "}";
-
-    Serial.println(payload);
-
-    if (client.publish(mqtt_topic, payload.c_str()))
-    {
-        Serial.println("Publish OK");
-    }
-    else
-    {
-        Serial.println("Publish FAILED");
-    }
-
-    delay(5000);
 }

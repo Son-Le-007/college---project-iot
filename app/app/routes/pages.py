@@ -38,7 +38,7 @@ async def register_page(request: Request):
 async def dashboard_page(request: Request):
     user = get_current_user(request)
     if not user:
-        return RedirectResponse(url="/login") # Chưa login thì cấm vào
+        return RedirectResponse(url="/login") 
         
     return request.app.state.templates.TemplateResponse(
         request=request, 

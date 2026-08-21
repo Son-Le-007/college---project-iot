@@ -27,7 +27,7 @@
       </div>
       <div style="text-align: right;">
         <div id="humidity-text" style="font-size: 2.2rem; font-weight: 700; color: #3b82f6; line-height: 1;">--</div>
-        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Độ ẩm (%)</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Độ ẩm không khí (%)</div>
       </div>
     </div>
   </div>
@@ -85,7 +85,37 @@
   </div>
 </div>
 
-<h2 style="font-size: 1.25rem; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border-color);">Phân Tích Dữ Liệu</h2>
+
+<h2 style="font-size: 1.25rem; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border-color);">Chỉ Số Lưu Trữ Gần Nhất (Gauges)</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 32px;">
+  
+  <div class="card" style="text-align: center">
+    <h3 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Nhiệt độ</h3>
+    <div style="position: relative; height: 160px; width: 100%; margin-top: 15px;">
+      <canvas id="temp-gauge-chart"></canvas>
+      <div id="temp-gauge-text" style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 1.5rem; font-weight: 700; color: var(--text-main);">--</div>
+    </div>
+  </div>
+  
+  <div class="card" style="text-align: center">
+    <h3 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Độ ẩm không khí</h3>
+    <div style="position: relative; height: 160px; width: 100%; margin-top: 15px;">
+      <canvas id="humidity-gauge-chart"></canvas>
+      <div id="humidity-gauge-text" style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 1.5rem; font-weight: 700; color: var(--text-main);">--</div>
+    </div>
+  </div>
+  
+  <div class="card" style="text-align: center">
+    <h3 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Ánh sáng</h3>
+    <div style="position: relative; height: 160px; width: 100%; margin-top: 15px;">
+      <canvas id="light-gauge-chart"></canvas>
+      <div id="light-gauge-text" style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 1.5rem; font-weight: 700; color: var(--text-main);">--</div>
+    </div>
+  </div>
+</div>
+
+
+<h2 style="font-size: 1.25rem; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border-color);">Biểu Đồ Lịch Sử</h2>
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px;">
   <div class="card">
     <h3 style="font-size: 1rem; color: var(--text-muted); margin-bottom: 16px;">Nhiệt độ & Độ ẩm (DHT11)</h3>
@@ -96,6 +126,7 @@
     <h3 style="font-size: 1rem; color: var(--text-muted); margin-bottom: 16px;">Độ ẩm Đất</h3>
     <div style="height: 250px;"><canvas id="humidity-chart"></canvas></div>
   </div>
+  
   <div class="card" style="grid-column: 1 / -1;">
     <h3 style="font-size: 1rem; color: var(--text-muted); margin-bottom: 16px;">Cường độ Ánh sáng (Lux)</h3>
     <div style="height: 250px;"><canvas id="light-chart"></canvas></div>
@@ -106,11 +137,16 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 <script>
+ 
   Chart.defaults.color = '#64748b';
   Chart.defaults.scale.grid.color = '#f1f5f9';
 
   const WINDOW_SECONDS = 300;
   let tempChart, humidityChart, lightChart;
+  let tempGaugeInstance, humidityGaugeInstance, lightGaugeInstance;
+  let deviceActive = false;
+
+
   async function controlBuzzer(action) {
     const statusEl = document.getElementById("buzzer-status");
     statusEl.innerText = "Đang truyền lệnh...";
@@ -124,6 +160,7 @@
       }
     } catch(e) { statusEl.innerText = "Lỗi kết nối Server!"; }
   }
+
 
   async function saveThreshold() {
     const val = parseFloat(document.getElementById("threshold-input").value);
@@ -147,6 +184,7 @@
   }
 
   function updateStatusUI(active) {
+    deviceActive = active;
     const statusText = document.getElementById("device-status-text");
     if (active) {
       statusText.innerText = "ONLINE";
@@ -158,6 +196,7 @@
       statusText.style.color = "#dc2626";
     }
   }
+
 
   function initSSE() {
     const eventSource = new EventSource("/api/stream");
@@ -192,6 +231,26 @@
     eventSource.onerror = function() { updateStatusUI(false); };
   }
 
+
+  function createGaugeConfig(label, maxVal, color) {
+    return {
+      type: "doughnut",
+      data: {
+        labels: [label, "Còn lại"],
+        datasets: [{
+          data: [0, maxVal],
+          backgroundColor: [color, "#e2e8f0"], // Nền xám nhạt cho light theme
+          borderWidth: 0,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, circumference: 180, rotation: 270,
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        cutout: "80%",
+      },
+    };
+  }
+
   function createChartConfig(label, color) {
     return { 
       type: "line", 
@@ -201,9 +260,43 @@
   }
 
   function initCharts() {
+ 
     tempChart = new Chart(document.getElementById("temperature-chart").getContext("2d"), createChartConfig("Nhiệt độ", "rgb(239, 68, 68)"));
     humidityChart = new Chart(document.getElementById("humidity-chart").getContext("2d"), createChartConfig("Độ ẩm đất", "rgb(16, 185, 129)"));
     lightChart = new Chart(document.getElementById("light-chart").getContext("2d"), createChartConfig("Ánh sáng", "rgb(234, 179, 8)"));
+    
+    
+    tempGaugeInstance = new Chart(document.getElementById("temp-gauge-chart").getContext("2d"), createGaugeConfig("Nhiệt độ", 50, "#ef4444"));
+    humidityGaugeInstance = new Chart(document.getElementById("humidity-gauge-chart").getContext("2d"), createGaugeConfig("Độ ẩm", 100, "#3b82f6"));
+    lightGaugeInstance = new Chart(document.getElementById("light-gauge-chart").getContext("2d"), createGaugeConfig("Ánh sáng", 10000, "#eab308"));
+  }
+
+
+  async function updateGauge(instance, textId, endpoint, maxVal, unit = "") {
+    const textEl = document.getElementById(textId);
+    if (!deviceActive) { textEl.innerText = "OFF"; return; }
+    try {
+      const response = await fetch(endpoint);
+      const data = await response.json();
+      if (data && data.length > 0 && data[0].value !== undefined) {
+        const val = data[0].value;
+        textEl.innerText = `${val}${unit}`;
+        if (instance) {
+          instance.data.datasets[0].data = [val, Math.max(0, maxVal - val)];
+          instance.update("none");
+        }
+      } else {
+        textEl.innerText = "--";
+      }
+    } catch (e) {}
+  }
+
+  async function updateAllGauges() {
+    await Promise.all([
+      updateGauge(tempGaugeInstance, "temp-gauge-text", "/api/metrics/persisted/gauge/temperature", 50, "°C"),
+      updateGauge(humidityGaugeInstance, "humidity-gauge-text", "/api/metrics/persisted/gauge/humidity", 100, "%"),
+      updateGauge(lightGaugeInstance, "light-gauge-text", "/api/metrics/persisted/gauge/ambient_light", 10000, " lux"),
+    ]);
   }
 
   async function updateMetricChart(instance, endpoint) {
@@ -231,7 +324,11 @@
 
   initCharts();
   initSSE();
+  
   updateAllCharts();
+  updateAllGauges();
+
   setInterval(updateAllCharts, 10000);
+  setInterval(updateAllGauges, 10000);
 </script>
 {% endblock %}

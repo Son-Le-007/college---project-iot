@@ -11,6 +11,8 @@ _in_memory_cache = {
     "predicted_evaporation_speed": 0.0,
     "mold_risk_code": 0,
     "mold_risk_label": "Low",
+    "active_user_email": None,
+    "last_email_sent_time": 0.0,
     "last_received_time": 0.0,
     "device_active": False,
 }
@@ -26,7 +28,11 @@ def set_sensor_cache(data: dict):
         _in_memory_cache["mold_risk_code"] = data.get("mold_risk_code", 0)
         _in_memory_cache["mold_risk_label"] = data.get("mold_risk_label", "Low")
         _in_memory_cache["last_received_time"] = time.time()
-    
+
+def set_active_user_cache(data: dict):
+    with _cache_lock:
+        _in_memory_cache["active_user_email"] = data
+
 def get_sensor_cache() -> dict:
     with _cache_lock:
         return _in_memory_cache.copy()
@@ -66,7 +72,20 @@ def get_last_received_time() -> float:
 def get_device_active() -> bool:
     with _cache_lock:
         return _in_memory_cache.get("device_active", False)
+    
+def get_latest_user_gmail():
+    with _cache_lock:
+        return _in_memory_cache["active_user_email"]
+
+def get_last_email_sent_time() -> float:
+    with _cache_lock:
+        return _in_memory_cache["last_email_sent_time"]
+
+def update_last_email_sent_time():
+    with _cache_lock:
+        _in_memory_cache["last_email_sent_time"] = time.time()
 
 def set_device_active(active: bool):
     with _cache_lock:
         _in_memory_cache["device_active"] = active
+

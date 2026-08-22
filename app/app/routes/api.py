@@ -10,7 +10,6 @@ from fastapi.responses import RedirectResponse
 from app.database import get_db
 from app.core.security import verify_password, create_access_token, hash_password
 from app.mqtt import mqtt_client
-from app.services.mail_alert import trigger_alert
 
 router = APIRouter()
 
@@ -75,7 +74,8 @@ async def login_api(request: Request, email: str = Form(...), password: str = Fo
             name="login.html", 
             context={"request": request, "error": "Sai mật khẩu, vui lòng thử lại!"}
         )
-        
+    
+    cache.set_active_user_cache(user["email"])
     token = create_access_token({"sub": user["email"]})
     response = RedirectResponse(url="/dashboard", status_code=302)
     response.set_cookie(key="access_token", value=token, httponly=True)

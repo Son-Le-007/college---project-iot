@@ -2,6 +2,7 @@ import json
 import time
 from app.services.cache import set_sensor_cache, get_device_active
 from app.services.ai_inference import predict_moisture_loss_rate, predict_mold_risk
+from app.services.mail_alert import trigger_alert_moisture
 
 from app.database import (
     insert_telemetry,
@@ -37,6 +38,8 @@ def handle_sensor_telemetry(payload: str):
 
         # 2. Cache result
         set_sensor_cache(data)
+        # 3. send mail if
+        trigger_alert_moisture()
 
         if not get_device_active():
             print("⚠️ [Services] Skip persistence: Device is marked INACTIVE.")
